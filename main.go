@@ -19,14 +19,23 @@ import (
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/text"
-	"gioui.org/widget"
+	gwidget "gioui.org/widget"
 	"gioui.org/widget/material"
 	"nenki.ui/app"
+	"nenki.ui/widget"
 )
 
 func main() {
 	//Test()
-	app.NewApp("测试").SetNavigationColor(255, 255, 39, 255).SetSize(1024, 1024).SetTitle("你好")
+	th := material.NewTheme()
+	app.NewApp("测试").SetSize(1024, 1024).SetTitle("你好").
+		Then(func(a *app.App, ctx layout.Context, al *widget.AnchorLayout) {
+			l := material.H1(th, "Hello, Gio")
+			maroon := color.NRGBA{R: 127, G: 0, B: 0, A: 255}
+			l.Color = maroon
+			l.Alignment = text.Middle
+			al.SetDirection(widget.Bottom).SetChild(l)
+		})
 	// 阻塞
 	app.Run()
 }
@@ -44,8 +53,8 @@ func Test() {
 
 func loop(w *appx.Window) error {
 	var (
-		b    widget.Clickable
-		deco widget.Decorations
+		b    gwidget.Clickable
+		deco gwidget.Decorations
 	)
 	var (
 		toggle    bool
@@ -72,10 +81,11 @@ func loop(w *appx.Window) error {
 			paint.ColorOp{Color: color.NRGBA{A: 0xff, G: 0xff}}.Add(gtx.Ops)
 			paint.PaintOp{}.Add(gtx.Ops)
 			layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-				return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
-					layout.Rigid(material.Button(th, &b, "Toggle decorations").Layout),
-					layout.Rigid(material.Body1(th, fmt.Sprintf("Decorated: %v", decorated)).Layout),
-				)
+				// return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
+				// 	layout.Rigid(material.Button(th, &b, "Toggle decorations").Layout),
+				// 	layout.Rigid(material.Body1(th, fmt.Sprintf("Decorated: %v", decorated)).Layout),
+				// )
+				return material.Body1(th, fmt.Sprintf("Decorated: %v", decorated)).Layout(gtx)
 			})
 			cl.Pop()
 			if !decorated {

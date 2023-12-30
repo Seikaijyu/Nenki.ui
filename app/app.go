@@ -1,16 +1,16 @@
 // 应用程序窗口管理器
+// 应用程序窗口管理器不实现MonadInterface
 package app
 
 import (
 	"image/color"
 
 	"gioui.org/app"
+	glayout "gioui.org/layout"
 	"gioui.org/unit"
 	"nenki.ui/context"
-	"nenki.ui/monad"
+	"nenki.ui/widget"
 )
-
-var _ monad.MonadInterface[*App, string] = &App{}
 
 // Orientation是应用程序的方向
 //
@@ -75,13 +75,10 @@ type App struct {
 }
 
 // 绑定函数
-func (p *App) Bind(fn func(*App) *App) *App {
-	return fn(p)
-}
-
-// 包装一个值，相当于调用NewApp
-func (p *App) Unit(title string) *App {
-	return NewApp(title)
+func (p *App) Then(fn func(*App, glayout.Context, *widget.AnchorLayout)) {
+	p.uiContext.CustomUIHandler(func(gtx glayout.Context, al *widget.AnchorLayout) {
+		fn(p, gtx, al)
+	})
 }
 
 // 设置标题
