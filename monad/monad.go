@@ -1,5 +1,7 @@
+// Monad模式接口定义
 package monad
 
+// Monad模式接口，所有Monad模式的结构体都必须实现这个接口
 type MonadInterface[T any, V any] interface {
 	// Monad模式必要的绑定，接受一个函数，翻译执行后得到的Monad结构体
 	Bind(func(T) T) T

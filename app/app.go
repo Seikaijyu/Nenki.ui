@@ -1,15 +1,12 @@
+// 应用程序窗口管理器
 package app
 
 import (
 	"image/color"
-	"os"
 
 	"gioui.org/app"
-	"gioui.org/io/system"
-	"gioui.org/layout"
-	"gioui.org/op"
 	"gioui.org/unit"
-	"gioui.org/widget/material"
+	"nenki.ui/context"
 	"nenki.ui/monad"
 )
 
@@ -70,32 +67,11 @@ type AppConfig struct {
 	windowMode WindowMode
 }
 
-// 未经过包装的原始数据
-type AppBaseData struct {
-	window      *app.Window     // 窗口
-	globalTheme *material.Theme // 全局主题
-	fatal       func(err error) // 错误处理
-}
-
-// UI循环
-func (p *AppBaseData) loop(app *App) error {
-	var ops op.Ops
-	for {
-		switch e := p.window.NextEvent().(type) {
-		case system.DestroyEvent:
-			return e.Err
-		case system.FrameEvent:
-			gtx := layout.NewContext(&ops, e)
-
-			e.Frame(gtx.Ops)
-		}
-	}
-}
-
 // 程序
 type App struct {
-	config *AppConfig   // 配置项
-	base   *AppBaseData // 原始数据
+	window    *app.Window    // 窗口
+	config    *AppConfig     // 配置项
+	uiContext *context.AppUI // UI上下文管理器
 }
 
 // 绑定函数
@@ -111,7 +87,7 @@ func (p *App) Unit(title string) *App {
 // 设置标题
 func (p *App) SetTitle(title string) *App {
 	p.config.title = title
-	p.base.window.Option(app.Title(title))
+	p.window.Option(app.Title(title))
 	return p
 }
 
@@ -124,7 +100,7 @@ func (p *App) Title() string {
 func (p *App) SetSize(width, height float32) *App {
 	p.config.width = width
 	p.config.height = height
-	p.base.window.Option(app.Size(unit.Dp(width), unit.Dp(height)))
+	p.window.Option(app.Size(unit.Dp(width), unit.Dp(height)))
 	return p
 }
 
@@ -137,7 +113,7 @@ func (p *App) Size(width, height float32) (float32, float32) {
 func (p *App) SetMinSize(width, height float32) *App {
 	p.config.minWidth = width
 	p.config.minHeight = height
-	p.base.window.Option(app.MinSize(unit.Dp(width), unit.Dp(height)))
+	p.window.Option(app.MinSize(unit.Dp(width), unit.Dp(height)))
 	return p
 }
 
@@ -150,7 +126,7 @@ func (p *App) MinSize(width, height float32) (float32, float32) {
 func (p *App) SetMaxSize(width, height float32) *App {
 	p.config.maxWidth = width
 	p.config.maxHeight = height
-	p.base.window.Option(app.MaxSize(unit.Dp(width), unit.Dp(height)))
+	p.window.Option(app.MaxSize(unit.Dp(width), unit.Dp(height)))
 	return p
 }
 
@@ -169,7 +145,7 @@ func (p *App) SetNavigationColor(r, g, b, a uint8) *App {
 		B: b,
 		A: a,
 	}
-	p.base.window.Option(app.NavigationColor(p.config.navigationColor))
+	p.window.Option(app.NavigationColor(p.config.navigationColor))
 	return p
 }
 
@@ -183,7 +159,7 @@ func (p *App) NavigationColor() (uint8, uint8, uint8, uint8) {
 // 控制窗口是否自绘装饰边框，false表示应用程序将不绘制自己的装饰边框
 func (p *App) SetDecorated(visible bool) *App {
 	p.config.decoratedVisible = visible
-	p.base.window.Option(app.Decorated(visible))
+	p.window.Option(app.Decorated(visible))
 	return p
 }
 
@@ -201,7 +177,7 @@ func (p *App) SetStatusColor(r, g, b, a uint8) *App {
 		A: a,
 	}
 
-	p.base.window.Option(app.StatusColor(p.config.statusColor))
+	p.window.Option(app.StatusColor(p.config.statusColor))
 	return p
 }
 
@@ -210,7 +186,7 @@ func (p *App) SetStatusColor(r, g, b, a uint8) *App {
 // 仅支持Android和JS
 func (p *App) SetOrientation(orientation Orientation) *App {
 	p.config.orientation = orientation
-	p.base.window.Option(app.Orientation(orientation).Option(), app.Fullscreen.Option())
+	p.window.Option(app.Orientation(orientation).Option(), app.Fullscreen.Option())
 	return p
 }
 
@@ -229,7 +205,7 @@ func (p *App) StatusColor() (uint8, uint8, uint8, uint8) {
 // 设置窗口模式
 func (p *App) SetWindowMode(mode WindowMode) *App {
 	p.config.windowMode = mode
-	p.base.window.Option(app.WindowMode(mode).Option())
+	p.window.Option(app.WindowMode(mode).Option())
 	return p
 }
 
@@ -240,7 +216,7 @@ func (p *App) WindowMode() WindowMode {
 
 // 自定义错误处理函数
 func (p *App) CustomFatalHandler(fn func(err error)) *App {
-	p.base.fatal = fn
+	p.uiContext.CustomFatalHandler(fn)
 	return p
 }
 
@@ -248,24 +224,12 @@ func (p *App) CustomFatalHandler(fn func(err error)) *App {
 func NewApp(title string) *App {
 	window := app.NewWindow()
 	var application = &App{
-		config: &AppConfig{},
-		base: &AppBaseData{
-			window:      window,
-			globalTheme: material.NewTheme(),
-			fatal: func(err error) {
-				panic(err)
-			},
-		},
+		window:    window,
+		config:    &AppConfig{},
+		uiContext: context.NewAppUI(window),
 	}
 	application.SetTitle(title) // 设置标题
-	go func() {
-		// 进行UI循环
-		if err := application.base.loop(application); err != nil {
-			// 进行错误处理
-			application.base.fatal(err)
-		}
-		os.Exit(0) // 退出程序
-	}()
+
 	return application
 }
 

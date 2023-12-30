@@ -26,7 +26,7 @@ import (
 
 func main() {
 	//Test()
-	app.NewApp("测试").SetNavigationColor(255, 255, 39, 255).SetMinSize(1024, 1024).SetSize(1024, 1024).SetMaxSize(768, 768)
+	app.NewApp("测试").SetNavigationColor(255, 255, 39, 255).SetSize(1024, 1024).SetTitle("你好")
 	// 阻塞
 	app.Run()
 }
