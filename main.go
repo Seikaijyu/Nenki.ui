@@ -27,19 +27,19 @@ import (
 
 func main() {
 	//Test()
-	th := material.NewTheme()
-	app.NewApp("测试").SetSize(1024, 1024).SetTitle("你好").
-		Then(func(a *app.App, ctx layout.Context, al *widget.AnchorLayout) {
-			l := material.H1(th, "Hello, Gio")
-			maroon := color.NRGBA{R: 127, G: 0, B: 0, A: 255}
-			l.Color = maroon
-			l.Alignment = text.Middle
-			al.SetDirection(widget.Bottom).SetChild(l)
+	app.NewApp("测试").SetMinSize(1024, 1024).SetSize(1024, 1024).SetTitle("你好").
+		Then(func(a *app.App, al *widget.AnchorLayout) {
+			btn := widget.NewButton("你好").OnClick(click)
+			al.SetDirection(widget.Center).AppendChild(btn)
 		})
 	// 阻塞
 	app.Run()
 }
 
+// 点击事件
+func click(b *widget.Button) {
+	fmt.Println("点击了按钮")
+}
 func Test() {
 	go func() {
 		w := appx.NewWindow(appx.Decorated(false))

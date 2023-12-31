@@ -74,11 +74,20 @@ type App struct {
 	uiContext *context.AppUI // UI上下文管理器
 }
 
-// 绑定函数
-func (p *App) Then(fn func(*App, glayout.Context, *widget.AnchorLayout)) {
-	p.uiContext.CustomUIHandler(func(gtx glayout.Context, al *widget.AnchorLayout) {
-		fn(p, gtx, al)
+// 此函数会在每次调用，用于更新UI，UI更新应该使用Then而非Loop，此函数用于逻辑检查
+func (p *App) Loop(fn func(app *App, base *widget.AnchorLayout)) *App {
+	p.uiContext.CustomUIHandler(func(gtx glayout.Context) {
+		fn(p, p.uiContext.GetUIWidget().(*widget.AnchorLayout))
 	})
+	return p
+}
+
+// UI函数
+func (p *App) Then(fn func(app *App, base *widget.AnchorLayout)) *App {
+	p.uiContext.AddSingleUIHandler(func(gtx glayout.Context) {
+		fn(p, p.uiContext.GetUIWidget().(*widget.AnchorLayout))
+	})
+	return p
 }
 
 // 设置标题
