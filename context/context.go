@@ -4,14 +4,22 @@ package context
 
 import (
 	"fmt"
+	"image/color"
 	"os"
 
 	gio "gioui.org/app"
 	"gioui.org/io/system"
 	glayout "gioui.org/layout"
 	"gioui.org/op"
+	"gioui.org/op/clip"
+	"gioui.org/op/paint"
 	"nenki.ui/widget"
 )
+
+type ContextConfig struct {
+	// 背景颜色
+	Background *color.NRGBA
+}
 
 // UI上下文管理器
 type AppUI struct {
@@ -19,6 +27,7 @@ type AppUI struct {
 	window          *gio.Window            // 基础窗口
 	uiWidget        widget.WidgetInterface // UI组件
 	data            chan map[string]any    // 数据
+	config          *ContextConfig         // 配置
 	uiHandler       func(glayout.Context)
 	singleUIHandler *Queue[func(glayout.Context)] // 单次执行的UI函数
 	gtx             glayout.Context
@@ -38,17 +47,42 @@ func (p *AppUI) loop() error {
 				return e.Err
 			case system.FrameEvent:
 				p.gtx = glayout.NewContext(&ops, e)
+				var stack = clip.Rect{Max: e.Size}.Push(p.gtx.Ops)
+				// 设置背景颜色
+				if p.config.Background != nil {
+					paint.ColorOp{Color: color.NRGBA{R: p.config.Background.R, G: p.config.Background.G, B: p.config.Background.B, A: p.config.Background.A}}.Add(p.gtx.Ops)
+					paint.PaintOp{}.Add(p.gtx.Ops)
+				}
 				p.uiHandler(p.gtx)
-				// 执行单次UI函数，如果有的话
+				// 执行队列中的UI函数，如果有的话
 				if fn, ok := p.singleUIHandler.Dequeue(); ok {
 					fn(p.gtx)
+					p.window.Invalidate()
 				}
 				// 渲染UI
 				p.uiWidget.Layout(p.gtx)
+				stack.Pop()
 				e.Frame(p.gtx.Ops)
+
 			}
 		}
 	}
+}
+
+// 设置背景颜色
+func (p *AppUI) SetBackground(r, g, b, a uint8) *AppUI {
+	p.config.Background = &color.NRGBA{
+		R: r,
+		G: g,
+		B: b,
+		A: a,
+	}
+	return p
+}
+
+// 获取背景颜色
+func (p *AppUI) Background() (uint8, uint8, uint8, uint8) {
+	return p.config.Background.R, p.config.Background.G, p.config.Background.B, p.config.Background.A
 }
 
 // 自定义UI循环
@@ -61,7 +95,8 @@ func (p *AppUI) CustomFatalHandler(fn func(err error)) *AppUI {
 	p.fatal = fn
 	return p
 }
-func (p *AppUI) AddSingleUIHandler(fn func(glayout.Context)) {
+
+func (p *AppUI) AppendSingleUIHandler(fn func(glayout.Context)) {
 	p.singleUIHandler.Enqueue(fn)
 	p.window.Invalidate()
 }
@@ -86,6 +121,7 @@ func NewAppUI(window *gio.Window) *AppUI {
 		uiWidget:        widget.NewAnchorLayout(widget.Center).SetDirection(widget.TopLeft),
 		uiHandler:       func(glayout.Context) {},
 		singleUIHandler: &Queue[func(glayout.Context)]{},
+		config:          &ContextConfig{},
 	}
 	go func() {
 		// 进行UI循环

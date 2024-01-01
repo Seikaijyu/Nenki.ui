@@ -32,16 +32,18 @@ const (
 	Center
 )
 
+// 锚点布局配置
+type AnchorLayoutConfig struct {
+	// 锚定方向
+	Direction Direction
+}
+
 // 锚定布局
 type AnchorLayout struct {
-	// ID
-	id string
 	// 子节点，可以为任意组件
 	child WidgetInterface
-	// 锚定方向
-	direction Direction
-	// 组件池所在的索引位置
-	index int
+	// 配置
+	config *AnchorLayoutConfig
 	// 组件是否被删除
 	isRemove bool
 }
@@ -65,7 +67,7 @@ func (p *AnchorLayout) Child() WidgetInterface {
 
 // 设置锚定方向
 func (p *AnchorLayout) SetDirection(direc Direction) *AnchorLayout {
-	p.direction = direc
+	p.config.Direction = direc
 	return p
 }
 
@@ -90,19 +92,18 @@ func (p *AnchorLayout) Destroy() {
 		p.RemoveChild()
 	}
 	p.isRemove = true
-	pool.RemoveAtIndex(p.id, p.index)
 }
 
 // 获取锚定方向
 func (p *AnchorLayout) Direction() Direction {
-	return p.direction
+	return p.config.Direction
 }
 
 // 渲染
 func (p *AnchorLayout) Layout(gtx glayout.Context) (dimensions glayout.Dimensions) {
-
-	return glayout.Direction(p.direction).Layout(gtx,
+	return glayout.Direction(p.config.Direction).Layout(gtx,
 		func(gtx glayout.Context) glayout.Dimensions {
+
 			// 如果有子节点
 			if p.child != nil {
 				// 如果子节点被删除
@@ -121,21 +122,21 @@ func (p *AnchorLayout) Layout(gtx glayout.Context) (dimensions glayout.Dimension
 // 创建锚点布局
 func NewAnchorLayout(direction Direction) *AnchorLayout {
 	widget := &AnchorLayout{
-		id:        "",
-		child:     nil,
-		direction: direction,
+		child: nil,
+		config: &AnchorLayoutConfig{
+			Direction: direction,
+		},
 	}
-	widget.index = pool.AddWidget("", widget)
 	return widget
 }
 
 // 从ID创建锚点布局
 func NewAnchorLayoutWithID(id string, direction Direction) *AnchorLayout {
 	widget := &AnchorLayout{
-		id:        "#" + id,
-		child:     nil,
-		direction: direction,
+		child: nil,
+		config: &AnchorLayoutConfig{
+			Direction: direction,
+		},
 	}
-	widget.index = pool.AddWidget(id, widget)
 	return widget
 }

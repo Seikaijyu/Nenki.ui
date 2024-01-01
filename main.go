@@ -19,18 +19,32 @@ import (
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/text"
+	"gioui.org/unit"
 	gwidget "gioui.org/widget"
 	"gioui.org/widget/material"
 	"nenki.ui/app"
+	"nenki.ui/utils"
 	"nenki.ui/widget"
 )
 
+func aa(a *app.App, i int, btn *widget.Button) {
+	a.Then(func(this *app.App, al *widget.AnchorLayout) {
+		btn.SetText(fmt.Sprintf("按钮%d", i))
+	})
+
+}
 func main() {
 	//Test()
 	app.NewApp("测试").SetMinSize(1024, 1024).SetSize(1024, 1024).SetTitle("你好").
-		Then(func(a *app.App, al *widget.AnchorLayout) {
-			btn := widget.NewButton("你好").OnClick(click)
-			al.SetDirection(widget.Center).AppendChild(btn)
+		Then(func(self *app.App, root *widget.AnchorLayout) {
+			root.SetDirection(widget.Center)
+			self.SetBackground(utils.HexToRGBA("#efaf00"))
+			btn := widget.NewButton("你好").SetFontSize(50).SetBackground(utils.HexToRGBA("#ef00fa")).SetCornerRadius(30)
+			root.AppendChild(btn)
+			for i := 0; i < 256; i++ {
+
+				aa(self, i, btn)
+			}
 		})
 	// 阻塞
 	app.Run()
@@ -65,6 +79,7 @@ func loop(w *appx.Window) error {
 	th.Shaper = text.NewShaper(text.WithCollection(gofont.Collection()))
 	var ops op.Ops
 	for {
+
 		switch e := w.NextEvent().(type) {
 		case system.DestroyEvent:
 			return e.Err
@@ -77,15 +92,19 @@ func loop(w *appx.Window) error {
 				toggle = !toggle
 				w.Option(appx.Decorated(toggle))
 			}
+
 			cl := clip.Rect{Max: e.Size}.Push(gtx.Ops)
 			paint.ColorOp{Color: color.NRGBA{A: 0xff, G: 0xff}}.Add(gtx.Ops)
 			paint.PaintOp{}.Add(gtx.Ops)
 			layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-				// return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
-				// 	layout.Rigid(material.Button(th, &b, "Toggle decorations").Layout),
-				// 	layout.Rigid(material.Body1(th, fmt.Sprintf("Decorated: %v", decorated)).Layout),
-				// )
-				return material.Body1(th, fmt.Sprintf("Decorated: %v", decorated)).Layout(gtx)
+				return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
+					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+						btn := material.Button(th, &b, "Toggle decorations")
+						btn.TextSize = unit.Sp(42)
+						return btn.Layout(gtx)
+					}),
+					layout.Rigid(material.Body1(th, fmt.Sprintf("Decorated: %v", decorated)).Layout),
+				)
 			})
 			cl.Pop()
 			if !decorated {

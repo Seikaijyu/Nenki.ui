@@ -56,11 +56,11 @@ type AppConfig struct {
 	// 窗口名字
 	title string
 	// Android导航栏或者浏览器地址栏的颜色
-	navigationColor color.NRGBA
+	navigationColor *color.NRGBA
 	// 是否显示窗口边框
 	decoratedVisible bool
 	// Android状态栏颜色
-	statusColor color.NRGBA
+	statusColor *color.NRGBA
 	// 窗口布局方向
 	orientation Orientation
 	// 窗口模式
@@ -74,18 +74,29 @@ type App struct {
 	uiContext *context.AppUI // UI上下文管理器
 }
 
-// 此函数会在每次调用，用于更新UI，UI更新应该使用Then而非Loop，此函数用于逻辑检查
-func (p *App) Loop(fn func(app *App, base *widget.AnchorLayout)) *App {
+func (p *App) Update() *App {
+	p.uiContext.GetUIWidget().(*widget.AnchorLayout).Layout(p.uiContext.GetGraphContext())
+	return p
+}
+
+// 此函数会在每次UI循环时调用，用于更新UI
+//
+// 此函数执行后会根据返回值判断是否需要完全更新UI，减少UI更新次数以提高性能
+func (p *App) Loop(fn func(self *App, root *widget.AnchorLayout)) *App {
 	p.uiContext.CustomUIHandler(func(gtx glayout.Context) {
 		fn(p, p.uiContext.GetUIWidget().(*widget.AnchorLayout))
+		p.Update()
 	})
 	return p
 }
 
-// UI函数
-func (p *App) Then(fn func(app *App, base *widget.AnchorLayout)) *App {
-	p.uiContext.AddSingleUIHandler(func(gtx glayout.Context) {
+// 此函数仅在UI循环中执行一次，用于初始化UI或者修改UI
+//
+// 此函数执行后会根据返回值判断是否需要完全更新UI，减少UI更新次数以提高性能
+func (p *App) Then(fn func(self *App, root *widget.AnchorLayout)) *App {
+	p.uiContext.AppendSingleUIHandler(func(ctx glayout.Context) {
 		fn(p, p.uiContext.GetUIWidget().(*widget.AnchorLayout))
+		p.Update()
 	})
 	return p
 }
@@ -145,13 +156,13 @@ func (p *App) MaxSize(width, height float32) (float32, float32) {
 //
 // 仅支持Android和JS
 func (p *App) SetNavigationColor(r, g, b, a uint8) *App {
-	p.config.navigationColor = color.NRGBA{
+	p.config.navigationColor = &color.NRGBA{
 		R: r,
 		G: g,
 		B: b,
 		A: a,
 	}
-	p.window.Option(app.NavigationColor(p.config.navigationColor))
+	p.window.Option(app.NavigationColor(*p.config.navigationColor))
 	return p
 }
 
@@ -176,14 +187,14 @@ func (p *App) Decorated() bool {
 
 // 用于设置 Android 状态栏的颜色
 func (p *App) SetStatusColor(r, g, b, a uint8) *App {
-	p.config.statusColor = color.NRGBA{
+	p.config.statusColor = &color.NRGBA{
 		R: r,
 		G: g,
 		B: b,
 		A: a,
 	}
 
-	p.window.Option(app.StatusColor(p.config.statusColor))
+	p.window.Option(app.StatusColor(*p.config.statusColor))
 	return p
 }
 
@@ -192,7 +203,7 @@ func (p *App) SetStatusColor(r, g, b, a uint8) *App {
 // 仅支持Android和JS
 func (p *App) SetOrientation(orientation Orientation) *App {
 	p.config.orientation = orientation
-	p.window.Option(app.Orientation(orientation).Option(), app.Fullscreen.Option())
+	p.window.Option(app.Orientation(orientation).Option())
 	return p
 }
 
@@ -201,6 +212,17 @@ func (p *App) SetOrientation(orientation Orientation) *App {
 // 仅支持Android和JS
 func (p *App) Orientation() Orientation {
 	return p.config.orientation
+}
+
+// 设置背景颜色
+func (p *App) SetBackground(r, g, b, a uint8) *App {
+	p.uiContext.SetBackground(r, g, b, a)
+	return p
+}
+
+// 获取背景颜色
+func (p *App) Background() (uint8, uint8, uint8, uint8) {
+	return p.uiContext.Background()
 }
 
 // 获取 Android 状态栏的颜色
