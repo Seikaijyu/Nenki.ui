@@ -27,24 +27,15 @@ import (
 	"nenki.ui/widget"
 )
 
-func aa(a *app.App, i int, btn *widget.Button) {
-	a.Then(func(this *app.App, al *widget.AnchorLayout) {
-		btn.SetText(fmt.Sprintf("按钮%d", i))
-	})
-
-}
 func main() {
+
 	//Test()
 	app.NewApp("测试").SetMinSize(1024, 1024).SetSize(1024, 1024).SetTitle("你好").
 		Then(func(self *app.App, root *widget.AnchorLayout) {
 			root.SetDirection(widget.Center)
 			self.SetBackground(utils.HexToRGBA("#efaf00"))
-			btn := widget.NewButton("你好").SetFontSize(50).SetBackground(utils.HexToRGBA("#ef00fa")).SetCornerRadius(30)
+			btn := widget.NewButton("你好").SetFontSize(50).OnLongClicked(longclick).OnClicked(click)
 			root.AppendChild(btn)
-			for i := 0; i < 256; i++ {
-
-				aa(self, i, btn)
-			}
 		})
 	// 阻塞
 	app.Run()
@@ -53,6 +44,9 @@ func main() {
 // 点击事件
 func click(b *widget.Button) {
 	fmt.Println("点击了按钮")
+}
+func longclick(b *widget.Button) {
+	fmt.Println("双击了按钮")
 }
 func Test() {
 	go func() {
