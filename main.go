@@ -30,21 +30,23 @@ import (
 func main() {
 
 	//Test()
-	app.NewApp("测试").SetMinSize(1024, 1024).SetSize(1024, 1024).SetTitle("你好").
-		Then(func(self *app.App, root *widget.AnchorLayout) {
-			root.SetDirection(widget.Center)
-			self.SetBackground(utils.HexToRGBA("#efaf00"))
-			btn := widget.NewButton("你好").SetFontSize(50).OnLongClicked(longclick).OnClicked(click)
+	app.NewApp("测试").MinSize(1024, 1024).Size(1024, 1024).Title("你好").DragFiles(true).
+		Then(func(self *app.App, root *widget.ContainerLayout) {
+			self.Background(utils.HexToRGBA("#efaf00"))
+			btn := widget.NewButton("你好").FontSize(50).CornerRadius(50).OnLongClicked(longclick)
 			root.AppendChild(btn)
+			self.OnDropFiles(func(files []string) {
+				k := make([]string, 10000)
+				for i, _ := range k {
+					fmt.Println("你好", i)
+				}
+				btn.Text(files[0])
+			})
 		})
 	// 阻塞
 	app.Run()
 }
 
-// 点击事件
-func click(b *widget.Button) {
-	fmt.Println("点击了按钮")
-}
 func longclick(b *widget.Button) {
 	fmt.Println("双击了按钮")
 }

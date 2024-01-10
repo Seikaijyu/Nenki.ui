@@ -4,10 +4,11 @@ package app
 
 import (
 	"image/color"
+	"runtime"
 
-	"gioui.org/app"
+	gapp "gioui.org/app"
 	glayout "gioui.org/layout"
-	"gioui.org/unit"
+	gunit "gioui.org/unit"
 	"nenki.ui/context"
 )
 
@@ -41,38 +42,13 @@ const (
 	Maximized
 )
 
-// 应用程序配置
-type AppConfig struct {
-	// 窗口尺寸
-	Width  float32
-	Height float32
-	// 最小尺寸
-	MinWidth  float32
-	MinHeight float32
-	// 最大尺寸
-	MaxWidth  float32
-	MaxHeight float32
-	// 窗口名字
-	Title string
-	// Android导航栏或者浏览器地址栏的颜色
-	NavigationColor *color.NRGBA
-	// 是否显示窗口边框
-	DecoratedVisible bool
-	// Android状态栏颜色
-	StatusColor *color.NRGBA
-	// 窗口布局方向
-	Orientation Orientation
-	// 窗口模式
-	WindowMode WindowMode
-}
-
 // 程序
 type App struct {
-	window    *app.Window    // 窗口
-	config    *AppConfig     // 配置项
+	window    *gapp.Window   // 窗口
 	uiContext *context.AppUI // UI上下文管理器
 }
 
+// 主动更新UI
 func (p *App) update(gtx glayout.Context) *App {
 	p.uiContext.GetUIWidget().(*context.Root).Layout(gtx)
 	return p
@@ -82,7 +58,7 @@ func (p *App) update(gtx glayout.Context) *App {
 //
 // 此函数执行后会根据返回值判断是否需要完全更新UI，减少UI更新次数以提高性能
 func (p *App) Loop(fn func(self *App, root *context.Root)) *App {
-	p.uiContext.CustomUIHandler(func(gtx glayout.Context) {
+	p.uiContext.OnUILoop(func(gtx glayout.Context) {
 		fn(p, p.uiContext.GetUIWidget().(*context.Root))
 		p.update(gtx)
 	})
@@ -101,162 +77,119 @@ func (p *App) Then(fn func(self *App, root *context.Root)) *App {
 }
 
 // 设置标题
-func (p *App) SetTitle(title string) *App {
-	p.config.Title = title
-	p.window.Option(app.Title(title))
+func (p *App) Title(title string) *App {
+	p.window.Option(gapp.Title(title))
 	return p
-}
-
-// 获取标题
-func (p *App) Title() string {
-	return p.config.Title
 }
 
 // 设置窗口尺寸
-func (p *App) SetSize(width, height float32) *App {
-	p.config.Width = width
-	p.config.Height = height
-	p.window.Option(app.Size(unit.Dp(width), unit.Dp(height)))
+func (p *App) Size(width, height float32) *App {
+	p.window.Option(gapp.Size(gunit.Dp(width), gunit.Dp(height)))
 	return p
-}
-
-// 获取窗口尺寸
-func (p *App) Size(width, height float32) (float32, float32) {
-	return p.config.Width, p.config.Height
 }
 
 // 设置窗口最小尺寸
-func (p *App) SetMinSize(width, height float32) *App {
-	p.config.MinWidth = width
-	p.config.MinHeight = height
-	p.window.Option(app.MinSize(unit.Dp(width), unit.Dp(height)))
+func (p *App) MinSize(width, height float32) *App {
+	p.window.Option(gapp.MinSize(gunit.Dp(width), gunit.Dp(height)))
 	return p
-}
-
-// 获取窗口最小尺寸
-func (p *App) MinSize(width, height float32) (float32, float32) {
-	return p.config.MinWidth, p.config.MinHeight
 }
 
 // 设置窗口最大尺寸
-func (p *App) SetMaxSize(width, height float32) *App {
-	p.config.MaxWidth = width
-	p.config.MaxHeight = height
-	p.window.Option(app.MaxSize(unit.Dp(width), unit.Dp(height)))
+func (p *App) MaxSize(width, height float32) *App {
+	p.window.Option(gapp.MaxSize(gunit.Dp(width), gunit.Dp(height)))
 	return p
-}
-
-// 获取窗口最大尺寸
-func (p *App) MaxSize(width, height float32) (float32, float32) {
-	return p.config.MaxWidth, p.config.MaxHeight
 }
 
 // 设置Android导航栏或者浏览器地址栏的颜色
 //
 // 仅支持Android和JS
-func (p *App) SetNavigationColor(r, g, b, a uint8) *App {
-	p.config.NavigationColor = &color.NRGBA{
+func (p *App) NavigationColor(r, g, b, a uint8) *App {
+	p.window.Option(gapp.NavigationColor(color.NRGBA{
 		R: r,
 		G: g,
 		B: b,
 		A: a,
-	}
-	p.window.Option(app.NavigationColor(*p.config.NavigationColor))
+	}))
 	return p
-}
-
-// 获取Android导航栏或者浏览器地址栏的颜色
-//
-// 仅支持Android和JS
-func (p *App) NavigationColor() (uint8, uint8, uint8, uint8) {
-	return p.config.NavigationColor.R, p.config.NavigationColor.G, p.config.NavigationColor.B, p.config.NavigationColor.A
 }
 
 // 控制窗口是否自绘装饰边框，false表示应用程序将不绘制自己的装饰边框
-func (p *App) SetDecorated(visible bool) *App {
-	p.config.DecoratedVisible = visible
-	p.window.Option(app.Decorated(visible))
+func (p *App) Decorated(visible bool) *App {
+	p.window.Option(gapp.Decorated(visible))
 	return p
 }
 
-// 获取控制窗口是否自绘装饰边框
-func (p *App) Decorated() bool {
-	return p.config.DecoratedVisible
-}
-
 // 用于设置 Android 状态栏的颜色
-func (p *App) SetStatusColor(r, g, b, a uint8) *App {
-	p.config.StatusColor = &color.NRGBA{
+func (p *App) StatusColor(r, g, b, a uint8) *App {
+	p.window.Option(gapp.StatusColor(color.NRGBA{
 		R: r,
 		G: g,
 		B: b,
 		A: a,
-	}
+	}))
+	return p
+}
 
-	p.window.Option(app.StatusColor(*p.config.StatusColor))
+// 设置文件拖拽到窗口
+func (p *App) DragFiles(enabled bool) *App {
+	if runtime.GOOS == "windows" {
+		gapp.DragAcceptFiles(gapp.HWND, enabled)
+
+	}
 	return p
 }
 
 // 设置窗口布局方向
 //
 // 仅支持Android和JS
-func (p *App) SetOrientation(orientation Orientation) *App {
-	p.config.Orientation = orientation
-	p.window.Option(app.Orientation(orientation).Option())
+func (p *App) Orientation(orientation Orientation) *App {
+	p.window.Option(gapp.Orientation(orientation).Option())
 	return p
-}
-
-// 获取窗口布局方向
-//
-// 仅支持Android和JS
-func (p *App) Orientation() Orientation {
-	return p.config.Orientation
 }
 
 // 设置背景颜色
-func (p *App) SetBackground(r, g, b, a uint8) *App {
-	p.uiContext.SetBackground(r, g, b, a)
+func (p *App) Background(r, g, b, a uint8) *App {
+	p.uiContext.Background(r, g, b, a)
 	return p
-}
-
-// 获取背景颜色
-func (p *App) Background() (uint8, uint8, uint8, uint8) {
-	return p.uiContext.Background()
-}
-
-// 获取 Android 状态栏的颜色
-func (p *App) StatusColor() (uint8, uint8, uint8, uint8) {
-	return p.config.StatusColor.R, p.config.StatusColor.G, p.config.StatusColor.B, p.config.StatusColor.A
 }
 
 // 设置窗口模式
-func (p *App) SetWindowMode(mode WindowMode) *App {
-	p.config.WindowMode = mode
-	p.window.Option(app.WindowMode(mode).Option())
+func (p *App) WindowMode(mode WindowMode) *App {
+	p.window.Option(gapp.WindowMode(mode).Option())
 	return p
 }
 
-// 获取窗口模式
-func (p *App) WindowMode() WindowMode {
-	return p.config.WindowMode
+// 设置文件拖拽到窗口处理函数
+//
+// 仅支持Windows
+func (p *App) OnDropFiles(fn func(files []string)) *App {
+	gapp.CustomDragHandler(func(files []string) {
+		p.Then(func(self *App, root *context.Root) {
+			fn(files)
+		})
+	})
+	return p
 }
 
-// 自定义错误处理函数
-func (p *App) CustomFatalHandler(fn func(err error)) *App {
-	p.uiContext.CustomFatalHandler(fn)
+// 自定义UI上下文错误处理函数
+func (p *App) OnUIContextFatal(fn func(err error)) *App {
+	p.Then(func(self *App, root *context.Root) {
+		p.uiContext.OnUIContextFatal(fn)
+	})
 	return p
 }
 
 // 创建应用，需要传入窗口名字
 func NewApp(title string) *App {
-	window := app.NewWindow()
+	window := gapp.NewWindow()
+
 	var application = &App{
 		window:    window,
-		config:    &AppConfig{},
 		uiContext: context.NewAppUI(window),
 	}
-	application.SetTitle(title) // 设置标题
-
+	application.Title(title) // 设置标题
+	// 提前调用一次以获取HWND和更快的加载
+	window.NextEvent()
 	return application
 }
 

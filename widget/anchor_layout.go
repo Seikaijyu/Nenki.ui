@@ -32,18 +32,12 @@ const (
 	Center
 )
 
-// 锚点布局配置
-type AnchorLayoutConfig struct {
-	// 锚定方向
-	Direction AnchorDirection
-}
-
 // 锚定布局
 type AnchorLayout struct {
 	// 子节点，可以为任意组件
 	childWidget WidgetInterface
 	// 配置
-	config *AnchorLayoutConfig
+	direction AnchorDirection
 	// 组件是否被删除
 	isRemove bool
 }
@@ -63,12 +57,6 @@ func (p *AnchorLayout) AppendChild(child WidgetInterface) *AnchorLayout {
 // 获取子节点
 func (p *AnchorLayout) Child() WidgetInterface {
 	return p.childWidget
-}
-
-// 设置锚定方向
-func (p *AnchorLayout) SetDirection(direc AnchorDirection) *AnchorLayout {
-	p.config.Direction = direc
-	return p
 }
 
 // 删除子节点
@@ -94,16 +82,16 @@ func (p *AnchorLayout) Destroy() {
 	p.isRemove = true
 }
 
-// 获取锚定方向
-func (p *AnchorLayout) Direction() AnchorDirection {
-	return p.config.Direction
+// 设置锚定方向
+func (p *AnchorLayout) Direction(direc AnchorDirection) *AnchorLayout {
+	p.direction = direc
+	return p
 }
 
 // 渲染
 func (p *AnchorLayout) Layout(gtx glayout.Context) (dimensions glayout.Dimensions) {
-	return glayout.Direction(p.config.Direction).Layout(gtx,
+	return glayout.Direction(p.direction).Layout(gtx,
 		func(gtx glayout.Context) glayout.Dimensions {
-
 			// 如果有子节点
 			if p.childWidget != nil {
 				// 如果子节点被删除
@@ -122,10 +110,9 @@ func (p *AnchorLayout) Layout(gtx glayout.Context) (dimensions glayout.Dimension
 // 创建锚点布局
 func NewAnchorLayout(direction AnchorDirection) *AnchorLayout {
 	widget := &AnchorLayout{
+		// 无子节点
 		childWidget: nil,
-		config: &AnchorLayoutConfig{
-			Direction: direction,
-		},
+		direction:   direction,
 	}
 	return widget
 }
