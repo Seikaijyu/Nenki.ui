@@ -4,6 +4,7 @@ import (
 	"image/color"
 	"time"
 
+	"gioui.org/layout"
 	glayout "gioui.org/layout"
 	gunit "gioui.org/unit"
 	gwidget "gioui.org/widget"
@@ -12,6 +13,7 @@ import (
 
 // 按钮配置
 type buttonConfig struct {
+	margin *glayout.Inset
 	// 鼠标点击事件
 	clicked func(*Button)
 	// 模拟点击
@@ -88,6 +90,17 @@ func (p *Button) Background(r, g, b, a uint8) *Button {
 // 设置内边距
 func (p *Button) Padding(top, left, bottom, right float32) *Button {
 	p.button.Inset = glayout.Inset{
+		Top:    gunit.Dp(top),
+		Left:   gunit.Dp(left),
+		Bottom: gunit.Dp(bottom),
+		Right:  gunit.Dp(right),
+	}
+	return p
+}
+
+// 设置外边距
+func (p *Button) Margin(top, left, bottom, right float32) *Button {
+	p.config.margin = &glayout.Inset{
 		Top:    gunit.Dp(top),
 		Left:   gunit.Dp(left),
 		Bottom: gunit.Dp(bottom),
@@ -200,7 +213,11 @@ func (p *Button) Layout(gtx glayout.Context) glayout.Dimensions {
 		// 点击事件
 		p.config.clicked(p)
 	}
-	return p.button.Layout(gtx)
+	// 外边距
+	return p.config.margin.Layout(gtx, func(gtx glayout.Context) layout.Dimensions {
+		// 按钮
+		return p.button.Layout(gtx)
+	})
 }
 
 // 创建按钮
@@ -208,8 +225,10 @@ func NewButton(text string) *Button {
 	widget := &Button{
 		clickCount:    0,
 		lastClickTime: time.Time{},
-		config:        &buttonConfig{},
-		button:        gmaterial.Button(gmaterial.NewTheme(), &gwidget.Clickable{}, text),
+		config: &buttonConfig{
+			margin: &glayout.Inset{},
+		},
+		button: gmaterial.Button(gmaterial.NewTheme(), &gwidget.Clickable{}, text),
 	}
 	return widget
 }

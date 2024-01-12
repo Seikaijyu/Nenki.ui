@@ -33,13 +33,3 @@ func (p EdgeDirection) FromDirection(v float32) (float32, float32, float32, floa
 	}
 	return 0, 0, 0, 0
 }
-
-// 内边距
-type Padding struct {
-	Top, Left, Bottom, Right float32
-}
-
-// 外边距
-type Margin struct {
-	Top, Left, Bottom, Right float32
-}

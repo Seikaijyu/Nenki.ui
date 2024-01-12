@@ -92,7 +92,7 @@ func (p *AppUI) OnUILoop(fn func(glayout.Context)) {
 }
 
 // 自定义错误处理函数
-func (p *AppUI) OnUIContextFatal(fn func(err error)) *AppUI {
+func (p *AppUI) OnUIContextError(fn func(err error)) *AppUI {
 	p.fatalHandler = fn
 	return p
 }

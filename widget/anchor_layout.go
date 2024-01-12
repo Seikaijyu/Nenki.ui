@@ -2,42 +2,24 @@ package widget
 
 import (
 	glayout "gioui.org/layout"
+	gunit "gioui.org/unit"
+	"nenki.ui/widget/anchor"
 )
 
 // 校验接口是否实现
 var _ WidgetInterface = &AnchorLayout{}
 var _ SingleChildLayoutInterface[*AnchorLayout] = &AnchorLayout{}
 
-// 锚点方向
-type AnchorDirection uint8
-
-const (
-	// 顶部左边
-	TopLeft AnchorDirection = iota
-	// 顶部
-	Top
-	// 顶部右边
-	TopRight
-	// 右边
-	Right
-	// 底部右边
-	BottomRight
-	// 底部
-	Bottom
-	// 底部左边
-	BottomLeft
-	// 左边
-	Left
-	// 居中
-	Center
-)
-
 // 锚定布局
 type AnchorLayout struct {
+	// 内边距
+	padding *glayout.Inset
+	// 外边距
+	margin *glayout.Inset
 	// 子节点，可以为任意组件
 	childWidget WidgetInterface
 	// 配置
-	direction AnchorDirection
+	direction glayout.Direction
 	// 组件是否被删除
 	isRemove bool
 }
@@ -82,16 +64,27 @@ func (p *AnchorLayout) Destroy() {
 	p.isRemove = true
 }
 
+// 设置外边距
+func (p *AnchorLayout) Margin(Top, Left, Bottom, Right float32) *AnchorLayout {
+	p.margin = &glayout.Inset{
+		Top:    gunit.Dp(Top),
+		Left:   gunit.Dp(Left),
+		Bottom: gunit.Dp(Bottom),
+		Right:  gunit.Dp(Right),
+	}
+	return p
+}
+
 // 设置锚定方向
-func (p *AnchorLayout) Direction(direc AnchorDirection) *AnchorLayout {
-	p.direction = direc
+func (p *AnchorLayout) Direction(direc anchor.Direction) *AnchorLayout {
+	p.direction = glayout.Direction(direc)
 	return p
 }
 
 // 渲染
 func (p *AnchorLayout) Layout(gtx glayout.Context) (dimensions glayout.Dimensions) {
-	return glayout.Direction(p.direction).Layout(gtx,
-		func(gtx glayout.Context) glayout.Dimensions {
+	return p.margin.Layout(gtx, func(gtx glayout.Context) glayout.Dimensions {
+		return p.direction.Layout(gtx, func(gtx glayout.Context) glayout.Dimensions {
 			// 如果有子节点
 			if p.childWidget != nil {
 				// 如果子节点被删除
@@ -102,17 +95,19 @@ func (p *AnchorLayout) Layout(gtx glayout.Context) (dimensions glayout.Dimension
 					return p.childWidget.Layout(gtx)
 				}
 			}
-			return glayout.Dimensions{}
-		},
-	)
+			return glayout.Dimensions{Size: gtx.Constraints.Max}
+		})
+	})
 }
 
 // 创建锚点布局
-func NewAnchorLayout(direction AnchorDirection) *AnchorLayout {
+func NewAnchorLayout(direction anchor.Direction) *AnchorLayout {
 	widget := &AnchorLayout{
 		// 无子节点
 		childWidget: nil,
-		direction:   direction,
+		direction:   glayout.Direction(direction),
+		padding:     &glayout.Inset{},
+		margin:      &glayout.Inset{},
 	}
 	return widget
 }

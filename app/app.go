@@ -8,6 +8,7 @@ import (
 
 	gapp "gioui.org/app"
 	glayout "gioui.org/layout"
+	"gioui.org/op"
 	gunit "gioui.org/unit"
 	"nenki.ui/context"
 )
@@ -50,7 +51,7 @@ type App struct {
 
 // 主动更新UI
 func (p *App) update(gtx glayout.Context) *App {
-	p.uiContext.GetUIWidget().(*context.Root).Layout(gtx)
+	op.InvalidateOp{}.Add(gtx.Ops)
 	return p
 }
 
@@ -172,9 +173,9 @@ func (p *App) OnDropFiles(fn func(files []string)) *App {
 }
 
 // 自定义UI上下文错误处理函数
-func (p *App) OnUIContextFatal(fn func(err error)) *App {
+func (p *App) OnUIContextError(fn func(err error)) *App {
 	p.Then(func(self *App, root *context.Root) {
-		p.uiContext.OnUIContextFatal(fn)
+		p.uiContext.OnUIContextError(fn)
 	})
 	return p
 }
