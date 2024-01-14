@@ -50,7 +50,7 @@ func (p *Border) AppendChild(child WidgetInterface) *Border {
 }
 
 // 获取子节点
-func (p *Border) Child() WidgetInterface {
+func (p *Border) GetChild() WidgetInterface {
 	return p.childWidget
 }
 
@@ -145,8 +145,7 @@ func NewBorder(widget WidgetInterface) *Border {
 				B: 0x00,
 				A: 0xff,
 			},
-			Width:        gunit.Dp(1),
-			CornerRadius: gunit.Dp(4),
+			Width: gunit.Dp(1),
 		},
 		margin:  &glayout.Inset{},
 		padding: &glayout.Inset{},

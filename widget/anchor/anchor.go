@@ -1,7 +1,9 @@
 package anchor
 
+import glayout "gioui.org/layout"
+
 // 锚点方向
-type Direction uint8
+type Direction = glayout.Direction
 
 const (
 	// 顶部左边

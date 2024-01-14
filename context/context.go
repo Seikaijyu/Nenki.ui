@@ -56,7 +56,7 @@ func (p *AppUI) loop() error {
 				var stack = clip.Rect{Max: e.Size}.Push(p.graphContext.Ops)
 				// 设置背景颜色
 				if p.config.background != nil {
-					paint.ColorOp{Color: color.NRGBA{R: p.config.background.R, G: p.config.background.G, B: p.config.background.B, A: p.config.background.A}}.Add(p.graphContext.Ops)
+					paint.ColorOp{Color: *p.config.background}.Add(p.graphContext.Ops)
 					paint.PaintOp{}.Add(p.graphContext.Ops)
 				}
 				p.updateHandler(p.graphContext)

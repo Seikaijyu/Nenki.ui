@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	appx "gioui.org/app"
 	"gioui.org/font/gofont"
@@ -20,33 +19,29 @@ import (
 	gwidget "gioui.org/widget"
 	"gioui.org/widget/material"
 	"nenki.ui/app"
-	"nenki.ui/context"
 	"nenki.ui/utils"
 	"nenki.ui/widget"
-	"nenki.ui/widget/anchor"
+	"nenki.ui/widget/edge"
 )
 
 func main() {
 
 	//Test()
-	app.NewApp("测试").Size(1024, 1024).Title("你好").DragFiles(true).
+	app.NewApp("测试").Size(600, 1000).MinSize(600, 1000).MaxSize(600, 1000).Title("测试窗口").DragFiles(true).
 		Then(func(self *app.App, root *widget.ContainerLayout) {
-			self.Background(utils.HexToRGBA("#efaf00"))
-			v := widget.NewButton("测网速").FontSize(200)
-			b := widget.NewBorder(v)
-			h := widget.NewAnchorLayout(anchor.Top).AppendChild(b)
 
-			root.AppendChild(h)
-			go func() {
-				time.Sleep(2 * time.Second)
-				self.Then(func(self *app.App, root *context.Root) {
-					v.Text("测网速2")
+			cloumn := widget.NewColumnLayout()
+			root.AppendChild(cloumn)
+			editor := widget.NewEditor("请随便输入什么文字").Then(func(self *widget.Editor) {
+				self.Submit(true).MaxLines(1).FontSize(20).Margin(edge.All(10))
+				self.OnSubmit(func(text string) {
+					fmt.Println("回车了", text)
 				})
-				time.Sleep(2 * time.Second)
-				self.Then(func(self *app.App, root *context.Root) {
-					v.Text("测网速333")
-				})
-			}()
+			})
+			submit := widget.NewButton("提交").Margin(edge.All(10)).CornerRadius(0)
+			cloumn.AppendFlexChild(0.1, widget.NewContainerLayout().Background(utils.HexToRGBA("#0fc0ff")))
+			cloumn.AppendFlexChild(1, widget.NewBorder(editor).Margin(edge.All(1)))
+			cloumn.AppendFlexChild(0.1, submit)
 		})
 	// 阻塞
 	app.Run()
@@ -57,7 +52,7 @@ func longclick(b *widget.Button) {
 }
 func Test() {
 	go func() {
-		w := appx.NewWindow(appx.Decorated(false))
+		w := appx.NewWindow()
 		if err := loop(w); err != nil {
 			log.Fatal(err)
 		}
@@ -67,17 +62,8 @@ func Test() {
 }
 
 func loop(w *appx.Window) error {
-	var (
-		b    gwidget.Clickable
-		deco gwidget.Decorations
-	)
-	var (
-		toggle    bool
-		decorated bool
-		title     string
-	)
+	var a gwidget.Clickable = gwidget.Clickable{}
 	th := material.NewTheme()
-	btn := material.Button(th, &b, "Toggle decorations")
 
 	th.Shaper = text.NewShaper(text.WithCollection(gofont.Collection()))
 	var ops op.Ops
@@ -86,28 +72,15 @@ func loop(w *appx.Window) error {
 		switch e := w.NextEvent().(type) {
 		case system.DestroyEvent:
 			return e.Err
-		case appx.ConfigEvent:
-			decorated = e.Config.Decorated
-			title = e.Config.Title
 		case system.FrameEvent:
 			gtx := layout.NewContext(&ops, e)
-			for b.Clicked(gtx) {
-				toggle = !toggle
-				w.Option(appx.Decorated(toggle))
-			}
-
-			layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-
-				return layout.Inset{}.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-
-					return btn.Layout(gtx)
-				})
-
-			})
-			if !decorated {
-				w.Perform(deco.Update(gtx))
-				material.Decorations(th, &deco, ^system.Action(0), title).Layout(gtx)
-			}
+			layout.Flex{Axis: layout.Vertical}.Layout(gtx, layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
+				return layout.Stack{}.Layout(gtx,
+					layout.Expanded(func(gtx layout.Context) layout.Dimensions {
+						return material.Button(th, &a, "测试").Layout(gtx)
+					}),
+				)
+			}))
 			e.Frame(gtx.Ops)
 		}
 	}

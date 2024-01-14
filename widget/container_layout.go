@@ -1,7 +1,11 @@
 package widget
 
 import (
+	"image/color"
+
 	glayout "gioui.org/layout"
+	"gioui.org/op/clip"
+	"gioui.org/op/paint"
 	gunit "gioui.org/unit"
 )
 
@@ -9,8 +13,15 @@ import (
 var _ WidgetInterface = &ContainerLayout{}
 var _ SingleChildLayoutInterface[*ContainerLayout] = &ContainerLayout{}
 
+type containerConfig struct {
+	// 背景颜色
+	background *color.NRGBA
+}
+
 // 容器布局，只用于包裹组件
 type ContainerLayout struct {
+	// 配置
+	config *containerConfig
 	// 内边距
 	padding *glayout.Inset
 	// 外边距
@@ -34,7 +45,7 @@ func (p *ContainerLayout) AppendChild(child WidgetInterface) *ContainerLayout {
 }
 
 // 获取子节点
-func (p *ContainerLayout) Child() WidgetInterface {
+func (p *ContainerLayout) GetChild() WidgetInterface {
 	return p.childWidget
 }
 
@@ -72,9 +83,27 @@ func (p *ContainerLayout) Margin(Top, Left, Bottom, Right float32) *ContainerLay
 	return p
 }
 
+// 背景颜色
+func (p *ContainerLayout) Background(r, g, b, a uint8) *ContainerLayout {
+	p.config.background = &color.NRGBA{
+		R: r,
+		G: g,
+		B: b,
+		A: a,
+	}
+	return p
+}
+
 // 渲染
 func (p *ContainerLayout) Layout(gtx glayout.Context) (dimensions glayout.Dimensions) {
 	return p.margin.Layout(gtx, func(gtx glayout.Context) glayout.Dimensions {
+		var stack = clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops)
+		defer stack.Pop()
+		// 设置背景颜色
+		if p.config.background != nil {
+			paint.ColorOp{Color: *p.config.background}.Add(gtx.Ops)
+			paint.PaintOp{}.Add(gtx.Ops)
+		}
 		// 如果有子节点
 		if p.childWidget != nil {
 			// 如果子节点被删除
@@ -96,6 +125,7 @@ func NewContainerLayout() *ContainerLayout {
 		childWidget: nil,
 		padding:     &glayout.Inset{},
 		margin:      &glayout.Inset{},
+		config:      &containerConfig{},
 	}
 	return widget
 }

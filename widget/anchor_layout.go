@@ -19,7 +19,7 @@ type AnchorLayout struct {
 	// 子节点，可以为任意组件
 	childWidget WidgetInterface
 	// 配置
-	direction glayout.Direction
+	direction anchor.Direction
 	// 组件是否被删除
 	isRemove bool
 }
@@ -37,7 +37,7 @@ func (p *AnchorLayout) AppendChild(child WidgetInterface) *AnchorLayout {
 }
 
 // 获取子节点
-func (p *AnchorLayout) Child() WidgetInterface {
+func (p *AnchorLayout) GetChild() WidgetInterface {
 	return p.childWidget
 }
 
@@ -77,7 +77,7 @@ func (p *AnchorLayout) Margin(Top, Left, Bottom, Right float32) *AnchorLayout {
 
 // 设置锚定方向
 func (p *AnchorLayout) Direction(direc anchor.Direction) *AnchorLayout {
-	p.direction = glayout.Direction(direc)
+	p.direction = direc
 	return p
 }
 
@@ -105,7 +105,7 @@ func NewAnchorLayout(direction anchor.Direction) *AnchorLayout {
 	widget := &AnchorLayout{
 		// 无子节点
 		childWidget: nil,
-		direction:   glayout.Direction(direction),
+		direction:   direction,
 		padding:     &glayout.Inset{},
 		margin:      &glayout.Inset{},
 	}

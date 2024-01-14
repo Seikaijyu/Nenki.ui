@@ -30,7 +30,7 @@ const (
 // 窗口模式
 //
 // 模式可以通过编程方式或用户点击窗口标题栏上的最小化/最大化按钮来更改
-type WindowMode uint8
+type WindowMode = gapp.WindowMode
 
 const (
 	// Windowed是带有特定于操作系统的窗口装饰的正常窗口模式。
@@ -156,7 +156,7 @@ func (p *App) Background(r, g, b, a uint8) *App {
 
 // 设置窗口模式
 func (p *App) WindowMode(mode WindowMode) *App {
-	p.window.Option(gapp.WindowMode(mode).Option())
+	p.window.Option(mode.Option())
 	return p
 }
 

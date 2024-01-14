@@ -19,18 +19,16 @@ type MultiChildLayoutInterface[T any] interface {
 	WidgetInterface
 	// 外边距
 	Margin(Top, Left, Bottom, Right float32) T
-	// 添加子节点
-	AppendChild(child ...WidgetInterface) T
 	// 从指定索引删除子节点
 	RemoveChildAt(index int) T
 	// 删除所有子节点
 	RemoveChildAll() T
 	// 获取子节点
-	ChildAll() []WidgetInterface
+	GetChildAll() []WidgetInterface
 	// 获取指定索引的子节点
-	ChildAt(index int) WidgetInterface
+	GetChildAt(index int) WidgetInterface
 	// 获取子节点数量
-	ChildCount() int
+	GetChildCount() int
 }
 
 // 单子节点布局接口
@@ -41,7 +39,7 @@ type SingleChildLayoutInterface[T any] interface {
 	// 设置子节点
 	AppendChild(childs WidgetInterface) T
 	// 获取子节点
-	Child() WidgetInterface
+	GetChild() WidgetInterface
 	// 删除子节点
 	RemoveChild() T
 }

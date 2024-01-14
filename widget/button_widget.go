@@ -4,7 +4,6 @@ import (
 	"image/color"
 	"time"
 
-	"gioui.org/layout"
 	glayout "gioui.org/layout"
 	gunit "gioui.org/unit"
 	gwidget "gioui.org/widget"
@@ -13,19 +12,20 @@ import (
 
 // 按钮配置
 type buttonConfig struct {
-	margin *glayout.Inset
+
 	// 鼠标点击事件
-	clicked func(*Button)
+	_clicked func(*Button)
 	// 模拟点击
-	click func()
+	_click func()
 	// 鼠标悬浮事件
-	hovered func(*Button)
+	_hovered func(*Button)
 	// 鼠标按下事件
-	pressed func(*Button)
+	_pressed func(*Button)
 	// 长点击
-	longClicked func(*Button)
+	_longClicked func(*Button)
 }
 type Button struct {
+	margin *glayout.Inset
 	// 配置
 	config *buttonConfig
 	// 主题
@@ -100,7 +100,7 @@ func (p *Button) Padding(top, left, bottom, right float32) *Button {
 
 // 设置外边距
 func (p *Button) Margin(top, left, bottom, right float32) *Button {
-	p.config.margin = &glayout.Inset{
+	p.margin = &glayout.Inset{
 		Top:    gunit.Dp(top),
 		Left:   gunit.Dp(left),
 		Bottom: gunit.Dp(bottom),
@@ -122,7 +122,7 @@ func (p *Button) GetFocused() bool {
 
 // 模拟点击
 func (p *Button) Click() *Button {
-	if p.config.click != nil {
+	if p.config._click != nil {
 		// 模拟点击，触发点击事件
 		p.button.Button.Click()
 	}
@@ -131,40 +131,40 @@ func (p *Button) Click() *Button {
 
 // 点击事件
 func (p *Button) OnClicked(fn func(*Button)) *Button {
-	p.config.clicked = fn
+	p.config._clicked = fn
 	return p
 }
 
 // 鼠标悬浮事件
 func (p *Button) OnHovered(fn func(*Button)) *Button {
-	p.config.hovered = fn
+	p.config._hovered = fn
 	return p
 }
 
 // 鼠标按下事件
 func (p *Button) OnPressed(fn func(*Button)) *Button {
-	p.config.pressed = fn
+	p.config._pressed = fn
 	return p
 }
 
 // 多次点击事件
 func (p *Button) OnLongClicked(fn func(*Button)) *Button {
-	p.config.longClicked = fn
+	p.config._longClicked = fn
 	return p
 }
 
 // 布局
 func (p *Button) Layout(gtx glayout.Context) glayout.Dimensions {
 	// 悬浮事件
-	if p.config.hovered != nil && p.button.Button.Hovered() {
-		p.config.hovered(p)
+	if p.config._hovered != nil && p.button.Button.Hovered() {
+		p.config._hovered(p)
 	}
 	// 按下事件
-	if p.config.pressed != nil && p.button.Button.Pressed() {
-		p.config.pressed(p)
+	if p.config._pressed != nil && p.button.Button.Pressed() {
+		p.config._pressed(p)
 	}
 	// 双击事件，其中实现了点击事件
-	if p.config.longClicked != nil {
+	if p.config._longClicked != nil {
 		// 拿到点击事件的具体状态
 		if history := p.button.Button.History(); len(history) > 0 {
 			// 拿到最后一次点击事件
@@ -180,17 +180,17 @@ func (p *Button) Layout(gtx glayout.Context) glayout.Dimensions {
 							p.clickCount++
 							if intervalSinceLastClick < 200 {
 								if p.clickCount >= 2 {
-									if p.config.longClicked != nil {
+									if p.config._longClicked != nil {
 										// 作为长点击事件触发
-										p.config.longClicked(p)
+										p.config._longClicked(p)
 									}
 									// 重置点击次数
 									p.clickCount = 0
 								}
 							} else {
-								if p.config.clicked != nil {
+								if p.config._clicked != nil {
 									// 作为点击事件触发
-									p.config.clicked(p)
+									p.config._clicked(p)
 								}
 							}
 						}
@@ -209,12 +209,12 @@ func (p *Button) Layout(gtx glayout.Context) glayout.Dimensions {
 			p.clickCount = 0
 		}
 		// 为了确保单击事件捕获性能，仅在有双击事件的时候才会使用以上方式捕获点击事件（使用以上方式捕获点击事件会减缓响应时间至少200ms）
-	} else if p.config.clicked != nil && p.button.Button.Clicked(gtx) {
+	} else if p.config._clicked != nil && p.button.Button.Clicked(gtx) {
 		// 点击事件
-		p.config.clicked(p)
+		p.config._clicked(p)
 	}
 	// 外边距
-	return p.config.margin.Layout(gtx, func(gtx glayout.Context) layout.Dimensions {
+	return p.margin.Layout(gtx, func(gtx glayout.Context) glayout.Dimensions {
 		// 按钮
 		return p.button.Layout(gtx)
 	})
@@ -225,10 +225,9 @@ func NewButton(text string) *Button {
 	widget := &Button{
 		clickCount:    0,
 		lastClickTime: time.Time{},
-		config: &buttonConfig{
-			margin: &glayout.Inset{},
-		},
-		button: gmaterial.Button(gmaterial.NewTheme(), &gwidget.Clickable{}, text),
+		margin:        &glayout.Inset{},
+		config:        &buttonConfig{},
+		button:        gmaterial.Button(gmaterial.NewTheme(), &gwidget.Clickable{}, text),
 	}
 	return widget
 }
