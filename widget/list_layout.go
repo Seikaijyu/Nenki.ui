@@ -10,9 +10,18 @@ import (
 	"nenki.ui/widget/axis"
 )
 
+// 列表配置
+type listLayoutConfig struct {
+	// 是否更新组件
+	update bool
+	// 删除事件
+	_destroy func()
+}
+
+// 列表布局
 type ListLayout struct {
-	// 是否被删除
-	isRemove     bool
+	// 配置
+	config       *listLayoutConfig
 	margin       *glayout.Inset
 	childWidgets []WidgetInterface
 	listWidget   *glayout.List
@@ -29,17 +38,53 @@ func (p *ListLayout) Then(fn func(self *ListLayout)) *ListLayout {
 	return p
 }
 
-// 是否被删除
-func (p *ListLayout) IsDestroy() bool {
-	return p.isRemove
+// 注册删除事件
+func (p *ListLayout) OnDestroy(fn func()) {
+	p.config._destroy = fn
 }
 
-// 注销自身，清理所有引用
+// 删除组件
 func (p *ListLayout) Destroy() {
-	p.isRemove = true
+	p.config.update = false
+	if p.config._destroy != nil {
+		p.config._destroy()
+		p.RemoveChildAll()
+
+	}
+
+	p.config._destroy = nil
 }
+
+// 是否更新组件
+func (p *ListLayout) Update(update bool) {
+	p.config.update = update
+}
+
+// 重新设置父节点
+func (p *ListLayout) ResetParent(child WidgetInterface) {
+	child.Destroy()
+	child.Update(true)
+	child.OnDestroy(func() {
+		child.Update(false)
+		p.RemoveChild(child)
+	})
+}
+
+// 添加子节点
 func (p *ListLayout) AppendChild(child WidgetInterface) *ListLayout {
+	p.ResetParent(child)
 	p.childWidgets = append(p.childWidgets, child)
+	return p
+}
+
+// 从组件中删除子节点
+func (p *ListLayout) RemoveChild(child WidgetInterface) *ListLayout {
+	for index, childWidget := range p.childWidgets {
+		if childWidget == child {
+			p.RemoveChildAt(index)
+			break
+		}
+	}
 	return p
 }
 
@@ -175,6 +220,9 @@ func (p *ListLayout) Margin(Top, Left, Bottom, Right float32) *ListLayout {
 
 // 渲染UI
 func (p *ListLayout) Layout(gtx glayout.Context) glayout.Dimensions {
+	if !p.config.update {
+		return glayout.Dimensions{}
+	}
 	return p.margin.Layout(gtx, func(gtx glayout.Context) glayout.Dimensions {
 		return p.listMaterial.Layout(gtx, len(p.childWidgets), func(gtx glayout.Context, index int) glayout.Dimensions {
 			return p.childWidgets[index].Layout(gtx)
@@ -192,5 +240,6 @@ func NewListLayout(axis axis.Axis) *ListLayout {
 		margin:       &glayout.Inset{},
 		listWidget:   &listWidget.List,
 		listMaterial: &listMaterial,
+		config:       &listLayoutConfig{update: true},
 	}
 }

@@ -95,7 +95,7 @@ func (e *Enum) Hovered() (string, bool) {
 	return e.hovered, e.hovering
 }
 
-// Focused reports the focused key, or false if no key is focused.
+// Focused 方法会返回当前聚焦的键，如果没有键被聚焦，那么返回 false。
 func (e *Enum) Focused() (string, bool) {
 	return e.focus, e.focused
 }

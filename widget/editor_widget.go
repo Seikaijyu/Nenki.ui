@@ -15,6 +15,11 @@ var _ WidgetInterface = &Editor{}
 
 // 编辑框配置
 type editorConfig struct {
+	// 是否更新组件
+	update bool
+	// 删除事件
+	_destroy func()
+
 	// 回车事件，仅在单行编辑时有效
 	_submit func(text string)
 	// 选择事件
@@ -31,8 +36,6 @@ type Editor struct {
 	margin *glayout.Inset
 	// editor组件
 	editorMaterial *gmaterial.EditorStyle
-	// 组件是否被删除
-	isRemove bool
 }
 
 // 绑定函数
@@ -41,14 +44,23 @@ func (p *Editor) Then(fn func(self *Editor)) *Editor {
 	return p
 }
 
-// 是否被删除
-func (p *Editor) IsDestroy() bool {
-	return p.isRemove
+// 注册删除事件
+func (p *Editor) OnDestroy(fn func()) {
+	p.config._destroy = fn
+}
+
+// 是否更新组件
+func (p *Editor) Update(update bool) {
+	p.config.update = update
 }
 
 // 注销自身，清理所有引用
 func (p *Editor) Destroy() {
-	p.isRemove = true
+	p.config.update = false
+	if p.config._destroy != nil {
+		p.config._destroy()
+	}
+	p.config._destroy = nil
 }
 
 // 外边距
@@ -62,6 +74,9 @@ func (p *Editor) Margin(Top, Left, Bottom, Right float32) *Editor {
 
 // 渲染
 func (p *Editor) Layout(gtx glayout.Context) glayout.Dimensions {
+	if !p.config.update {
+		return glayout.Dimensions{}
+	}
 	return p.margin.Layout(gtx, func(gtx glayout.Context) glayout.Dimensions {
 		for _, item := range p.editorMaterial.Editor.Events() {
 			switch item.(type) {
@@ -302,7 +317,7 @@ func (p *Editor) KeyboardType(keyboardType text.InputHint) *Editor {
 func NewEditor(hint string) *Editor {
 	editorMaterial := gmaterial.Editor(gmaterial.NewTheme(), &gwidget.Editor{}, hint)
 	return &Editor{
-		config:         &editorConfig{},
+		config:         &editorConfig{update: true},
 		margin:         &glayout.Inset{},
 		editorMaterial: &editorMaterial,
 	}

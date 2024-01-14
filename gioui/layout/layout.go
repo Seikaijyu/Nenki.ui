@@ -263,9 +263,9 @@ func (a Alignment) String() string {
 	}
 }
 
-// Convert a point in (x, y) coordinates to (main, cross) coordinates,
-// or vice versa. Specifically, Convert((x, y)) returns (x, y) unchanged
-// for the horizontal axis, or (y, x) for the vertical axis.
+// Convert 函数将一个点的 (x, y) 坐标转换为 (main, cross) 坐标，
+// 或者反过来。具体来说，如果坐标为横轴，Convert((x, y)) 将返回 (x, y) 不变；
+// 如果坐标为纵轴，那么它将返回 (y, x)。
 func (a Axis) Convert(pt image.Point) image.Point {
 	if a == Horizontal {
 		return pt
@@ -273,9 +273,9 @@ func (a Axis) Convert(pt image.Point) image.Point {
 	return image.Pt(pt.Y, pt.X)
 }
 
-// FConvert a point in (x, y) coordinates to (main, cross) coordinates,
-// or vice versa. Specifically, FConvert((x, y)) returns (x, y) unchanged
-// for the horizontal axis, or (y, x) for the vertical axis.
+// FConvert 函数将一个点的 (x, y) 坐标转换为 (main, cross) 坐标，
+// 或者反过来。具体来说，如果坐标为横轴，FConvert((x, y)) 将返回 (x, y) 不变；
+// 如果坐标为纵轴，那么它将返回 (y, x)。
 func (a Axis) FConvert(pt f32.Point) f32.Point {
 	if a == Horizontal {
 		return pt

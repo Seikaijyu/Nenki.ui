@@ -72,18 +72,17 @@ func NewContext(ops *op.Ops, e system.FrameEvent) Context {
 	}
 }
 
-// Dp converts v to pixels.
+// Dp 函数将单位 Dp 转换为像素。
 func (c Context) Dp(v unit.Dp) int {
 	return c.Metric.Dp(v)
 }
 
-// Sp converts v to pixels.
+// Sp 函数将单位 Sp 转换为像素。
 func (c Context) Sp(v unit.Sp) int {
 	return c.Metric.Sp(v)
 }
 
-// Events returns the events available for the key. If no
-// queue is configured, Events returns nil.
+// Events 返回可用于键的事件。如果没有配置队列，Events 返回 nil。
 func (c Context) Events(k event.Tag) []event.Event {
 	if c.Queue == nil {
 		return nil
@@ -91,11 +90,9 @@ func (c Context) Events(k event.Tag) []event.Event {
 	return c.Queue.Events(k)
 }
 
-// Disabled returns a copy of this context with a nil Queue,
-// blocking events to widgets using it.
+// Disabled 返回此上下文的一个副本，副本中的队列为 nil，可以阻止事件传递到使用它的小部件。
 //
-// By convention, a nil Queue is a signal to widgets to draw themselves
-// in a disabled state.
+// 按照惯例，nil 队列是指示小部件以禁用状态绘制自身的信号。
 func (c Context) Disabled() Context {
 	c.Queue = nil
 	return c

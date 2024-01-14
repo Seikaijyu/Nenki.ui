@@ -12,7 +12,14 @@ import (
 var _ WidgetInterface = &Border{}
 var _ SingleChildLayoutInterface[*Border] = &Border{}
 
+type borderConfig struct {
+	// 是否更新组件
+	update bool
+	// 删除事件
+	_destroy func()
+}
 type Border struct {
+	config *borderConfig
 	// 外边距
 	margin *glayout.Inset
 	// 内边距
@@ -23,8 +30,6 @@ type Border struct {
 	spacer *glayout.Inset
 	// 包裹的组件
 	childWidget WidgetInterface
-	// 组件是否被删除
-	isRemove bool
 }
 
 // 绑定函数
@@ -33,18 +38,38 @@ func (p *Border) Then(fn func(self *Border)) *Border {
 	return p
 }
 
-// 是否被删除
-func (p *Border) IsDestroy() bool {
-	return p.isRemove
+// 注册删除事件
+func (p *Border) OnDestroy(fn func()) {
+	p.config._destroy = fn
+}
+
+// 是否更新组件
+func (p *Border) Update(update bool) {
+	p.config.update = update
 }
 
 // 注销自身，清理所有引用
 func (p *Border) Destroy() {
-	p.isRemove = true
+	p.config.update = false
+	if p.config._destroy != nil {
+		p.config._destroy()
+	}
+	p.config._destroy = nil
+}
+
+// 重新设置父节点
+func (p *Border) ResetParent(child WidgetInterface) {
+	child.Destroy()
+	child.Update(true)
+	child.OnDestroy(func() {
+		child.Update(false)
+		p.RemoveChild()
+	})
 }
 
 // 设置子节点
 func (p *Border) AppendChild(child WidgetInterface) *Border {
+	p.ResetParent(child)
 	p.childWidget = child
 	return p
 }
@@ -112,21 +137,14 @@ func (p *Border) Padding(Top, Left, Bottom, Right float32) *Border {
 
 // 渲染UI
 func (p *Border) Layout(gtx glayout.Context) glayout.Dimensions {
+	if !p.config.update || p.childWidget == nil {
+		return glayout.Dimensions{}
+	}
 	return p.margin.Layout(gtx, func(gtx glayout.Context) glayout.Dimensions {
 		return p.border.Layout(gtx, func(gtx glayout.Context) glayout.Dimensions {
 			return p.padding.Layout(gtx, func(gtx glayout.Context) glayout.Dimensions {
 				return p.spacer.Layout(gtx, func(gtx glayout.Context) glayout.Dimensions {
-					// 如果有子节点
-					if p.childWidget != nil {
-						// 如果子节点被删除
-						if p.childWidget.IsDestroy() {
-							// 断开子节点
-							p.RemoveChild()
-						} else {
-							return p.childWidget.Layout(gtx)
-						}
-					}
-					return glayout.Dimensions{}
+					return p.childWidget.Layout(gtx)
 				})
 			})
 		})
@@ -138,6 +156,7 @@ func (p *Border) Layout(gtx glayout.Context) glayout.Dimensions {
 func NewBorder(widget WidgetInterface) *Border {
 	border := &Border{
 		childWidget: widget,
+		config:      &borderConfig{update: true},
 		border: &gwidget.Border{
 			Color: color.NRGBA{
 				R: 0x00,

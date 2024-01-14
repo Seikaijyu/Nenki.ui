@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runtime"
+	"sync"
 	"time"
 
 	appx "gioui.org/app"
@@ -17,47 +19,67 @@ import (
 	"gioui.org/widget/material"
 	"nenki.ui/app"
 	"nenki.ui/widget"
-	"nenki.ui/widget/edge"
+	"nenki.ui/widget/axis"
 )
 
-func main() {
+func printMemStat(ms runtime.MemStats) {
+	runtime.ReadMemStats(&ms)
+	fmt.Println("--------------------------------------")
+	fmt.Println("Memory Statistics Reporting time: ", time.Now())
+	fmt.Println("--------------------------------------")
+	fmt.Println("Bytes of allocated heap objects: ", ms.Alloc)
+	fmt.Println("Total bytes of Heap object: ", ms.TotalAlloc)
+	fmt.Println("Bytes of memory obtained from OS: ", ms.Sys)
+	fmt.Println("Count of heap objects: ", ms.Mallocs)
+	fmt.Println("Count of heap objects freed: ", ms.Frees)
+	fmt.Println("Count of live heap objects", ms.Mallocs-ms.Frees)
+	fmt.Println("Number of completed GC cycles: ", ms.NumGC)
+	fmt.Println("--------------------------------------")
+}
 
+var buttonPool = sync.Pool{
+	New: func() interface{} {
+		return new(widget.Button)
+	},
+}
+
+func main() {
+	var ms runtime.MemStats
+	printMemStat(ms)
 	//Test()
-	app.NewApp("测试").Size(600, 160).MinSize(600, 160).MaxSize(600, 160).Title("测试窗口").Decorated(false).DragFiles(true).
+	app.NewApp("测试").Size(1024, 1024).Title("你好").DragFiles(true).
 		Then(func(self *app.App, root *widget.ContainerLayout) {
-			cloumn := widget.NewColumnLayout()
-			root.AppendChild(cloumn).Margin(edge.All(10))
-			editor := widget.NewEditor("请随便输入什么文字").Then(func(self *widget.Editor) {
-				self.SingleLine(true).Submit(true).FontSize(20).Margin(edge.All(10)).Then(func(self *widget.Editor) {
-					self.OnSubmit(func(text string) {
-						self.Text("")
-						self.Focus()
-					})
-				})
-			})
-			cloumn.AppendRigidChild(widget.NewBorder(editor).Margin(edge.Bottom.FromDirection(5)))
-			cloumn.AppendRigidChild(widget.NewButton("提交").CornerRadius(0).Then(func(self *widget.Button) {
-				self.OnClicked(func(b *widget.Button) {
-					editor.Text("")
-					editor.Focus()
-				})
-			}))
-			cloumn.AppendRigidChild(widget.NewButton("关闭").Margin(edge.Top.FromDirection(5)).CornerRadius(0).Then(func(self *widget.Button) {
-				self.OnClicked(func(b *widget.Button) {
-					go func() {
-						time.Sleep(time.Second / 3)
-						app.Exit()
-					}()
-				})
-			}))
+			h := widget.NewRowLayout()
+			root.AppendChild(h)
+			v := widget.NewListLayout(axis.Vertical).ScrollToEnd(true)
+			h.AppendFlexChild(0.5, widget.NewButton("float").FontSize(60).CornerRadius(10))
+
+			h.AppendFlexChild(1, v)
+
+			for i := 0; i < 50000; i++ {
+				v.AppendChild(widget.NewButton(fmt.Sprintf("item %d", i)).FontSize(20).CornerRadius(0))
+				if i%10 == 0 {
+					v.RemoveChildAt(0)
+				}
+			}
+			v.Destroy()
+			go func() {
+				time.Sleep(5 * time.Second)
+				runtime.GC()
+				printMemStat(ms)
+				go func() {
+					time.Sleep(5 * time.Second)
+					runtime.GC()
+					printMemStat(ms)
+				}()
+			}()
+
 		})
+
 	// 阻塞
 	app.Run()
 }
 
-func longclick(b *widget.Button) {
-	fmt.Println("双击了按钮")
-}
 func Test() {
 	go func() {
 		w := appx.NewWindow()
@@ -70,7 +92,8 @@ func Test() {
 }
 
 func loop(w *appx.Window) error {
-	var a gwidget.Clickable = gwidget.Clickable{}
+	var a gwidget.Bool = gwidget.Bool{}
+	var b gwidget.Bool = gwidget.Bool{}
 	th := material.NewTheme()
 
 	th.Shaper = text.NewShaper(text.WithCollection(gofont.Collection()))
@@ -82,13 +105,12 @@ func loop(w *appx.Window) error {
 			return e.Err
 		case system.FrameEvent:
 			gtx := layout.NewContext(&ops, e)
-			layout.Flex{Axis: layout.Vertical}.Layout(gtx, layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
-				return layout.Stack{}.Layout(gtx,
-					layout.Expanded(func(gtx layout.Context) layout.Dimensions {
-						return material.Button(th, &a, "测试").Layout(gtx)
-					}),
+			layout.N.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+				return layout.Flex{Axis: layout.Horizontal}.Layout(gtx,
+					layout.Rigid(material.CheckBox(th, &a, "测试1").Layout),
+					layout.Rigid(material.CheckBox(th, &b, "测试2").Layout),
 				)
-			}))
+			})
 			e.Frame(gtx.Ops)
 		}
 	}

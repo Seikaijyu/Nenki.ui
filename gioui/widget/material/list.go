@@ -16,33 +16,31 @@ import (
 	"gioui.org/widget"
 )
 
-// fromListPosition converts a layout.Position into two floats representing
-// the location of the viewport on the underlying content. It needs to know
-// the number of elements in the list and the major-axis size of the list
-// in order to do this. The returned values will be in the range [0,1], and
-// start will be less than or equal to end.
+// FromListPosition将一个layout.Position转换为两个浮点数，这两个浮点数表示视口在基础内容上的位置。它需要知道列表中的元素个数和列表的主轴大小才能做到这一点。返回的值将在 [0,1] 的范围内，并且start将小于或等于end。
+func FromListPosition(lp layout.Position, elements int, majorAxisSize int) (start, end float32) {
+	return fromListPosition(lp, elements, majorAxisSize)
+}
+
+// fromListPosition将一个layout.Position转换为两个浮点数，这两个浮点数表示视口在基础内容上的位置。它需要知道列表中的元素个数和列表的主轴大小才能做到这一点。返回的值将在 [0,1] 的范围内，并且start将小于或等于end。
 func fromListPosition(lp layout.Position, elements int, majorAxisSize int) (start, end float32) {
-	// Approximate the size of the scrollable content.
+	// 估算可滚动内容的大小。
 	lengthEstPx := float32(lp.Length)
 	elementLenEstPx := lengthEstPx / float32(elements)
 
-	// Determine how much of the content is visible.
+	// 确定可见内容的比例。
 	listOffsetF := float32(lp.Offset)
 	listOffsetL := float32(lp.OffsetLast)
 
-	// Compute the location of the beginning of the viewport using estimated element size and known
-	// pixel offsets.
+	// 使用估计的元素大小和已知的像素偏移计算视口开始位置。
 	viewportStart := clamp1((float32(lp.First)*elementLenEstPx + listOffsetF) / lengthEstPx)
 	viewportEnd := clamp1((float32(lp.First+lp.Count)*elementLenEstPx + listOffsetL) / lengthEstPx)
 	viewportFraction := viewportEnd - viewportStart
 
-	// Compute the expected visible proportion of the list content based solely on the ratio
-	// of the visible size and the estimated total size.
+	// 仅根据可见大小和估计的总大小之比，计算列表内容的预期可见比例。
 	visiblePx := float32(majorAxisSize)
 	visibleFraction := visiblePx / lengthEstPx
 
-	// Compute the error between the two methods of determining the viewport and diffuse the
-	// error on either end of the viewport based on how close we are to each end.
+	// 计算确定视口的两种方法之间的误差，并根据我们接近每个端点的程度，在视口的两端扩散误差。
 	err := visibleFraction - viewportFraction
 	adjStart := viewportStart
 	adjEnd := viewportEnd
@@ -123,20 +121,18 @@ func Scrollbar(th *Theme, state *widget.Scrollbar) ScrollbarStyle {
 	}
 }
 
-// Width returns the minor axis width of the scrollbar in its current
-// configuration (taking padding for the scroll track into account).
+// Width 函数返回当前配置下滚动条的次要轴宽度（考虑到滚动轨道的填充）。
 func (s ScrollbarStyle) Width() unit.Dp {
 	return s.Indicator.MinorWidth + s.Track.MinorPadding + s.Track.MinorPadding
 }
 
-// Layout the scrollbar.
+// Layout 函数布局滚动条。
 func (s ScrollbarStyle) Layout(gtx layout.Context, axis layout.Axis, viewportStart, viewportEnd float32) layout.Dimensions {
 	if !rangeIsScrollable(viewportStart, viewportEnd) {
 		return layout.Dimensions{}
 	}
 
-	// Set minimum constraints in an axis-independent way, then convert to
-	// the correct representation for the current axis.
+	// 以与轴无关的方式设置最小约束，然后转换为当前轴的正确表示。
 	convert := axis.Convert
 	maxMajorAxis := convert(gtx.Constraints.Max).X
 	gtx.Constraints.Min.X = maxMajorAxis
@@ -146,7 +142,7 @@ func (s ScrollbarStyle) Layout(gtx layout.Context, axis layout.Axis, viewportSta
 
 	s.Scrollbar.Update(gtx, axis, viewportStart, viewportEnd)
 
-	// Darken indicator if hovered.
+	// 如果鼠标悬停，则变暗指示器。
 	if s.Scrollbar.IndicatorHovered() {
 		s.Indicator.Color = s.Indicator.HoverColor
 	}
@@ -235,12 +231,9 @@ func (s ScrollbarStyle) layout(gtx layout.Context, axis layout.Axis, viewportSta
 type AnchorStrategy uint8
 
 const (
-	// Occupy reserves space for the scrollbar, making the underlying
-	// content region smaller on one axis.
+	// Occupy 预留空间给滚动条，使得下面的内容区域在一个轴上变小。
 	Occupy AnchorStrategy = iota
-	// Overlay causes the scrollbar to float atop the content without
-	// occupying any space. Content in the underlying area can be occluded
-	// by the scrollbar.
+	// Overlay 让滚动条浮动在内容上方，不占用任何空间。位于下面的内容可能会被滚动条遮挡。
 	Overlay
 )
 
@@ -259,16 +252,15 @@ func List(th *Theme, state *widget.List) ListStyle {
 	}
 }
 
-// Layout the list and its scrollbar.
+// 布局列表和滚动条。
 func (l ListStyle) Layout(gtx layout.Context, length int, w layout.ListElement) layout.Dimensions {
 	originalConstraints := gtx.Constraints
 
-	// Determine how much space the scrollbar occupies.
+	// 确定滚动条占用多少空间。
 	barWidth := gtx.Dp(l.Width())
 
 	if l.AnchorStrategy == Occupy {
-
-		// Reserve space for the scrollbar using the gtx constraints.
+		// 使用gtx约束为滚动条预留空间。
 		max := l.state.Axis.Convert(gtx.Constraints.Max)
 		min := l.state.Axis.Convert(gtx.Constraints.Min)
 		max.Y -= barWidth
@@ -286,16 +278,14 @@ func (l ListStyle) Layout(gtx layout.Context, length int, w layout.ListElement) 
 	listDims := l.state.List.Layout(gtx, length, w)
 	gtx.Constraints = originalConstraints
 
-	// Draw the scrollbar.
-	anchoring := layout.E
+	// 绘制滚动条
+	anchoring := layout.E // layout.Right
 	if l.state.Axis == layout.Horizontal {
-		anchoring = layout.S
+		anchoring = layout.S // layout.Bottom
 	}
 	majorAxisSize := l.state.Axis.Convert(listDims.Size).X
 	start, end := fromListPosition(l.state.Position, length, majorAxisSize)
-	// layout.Direction respects the minimum, so ensure that the
-	// scrollbar will be drawn on the correct edge even if the provided
-	// layout.Context had a zero minimum constraint.
+	// layout.Direction尊重最小值，所以要确保即使提供的layout.Context有零最小约束，滚动条也会在正确的边缘绘制。
 	gtx.Constraints.Min = listDims.Size
 	if l.AnchorStrategy == Occupy {
 		min := l.state.Axis.Convert(gtx.Constraints.Min)
@@ -307,13 +297,12 @@ func (l ListStyle) Layout(gtx layout.Context, length int, w layout.ListElement) 
 	})
 
 	if delta := l.state.ScrollDistance(); delta != 0 {
-		// Handle any changes to the list position as a result of user interaction
-		// with the scrollbar.
+		// 处理用户与滚动条交互导致的列表位置变化。
 		l.state.List.ScrollBy(delta * float32(length))
 	}
 
 	if l.AnchorStrategy == Occupy {
-		// Increase the width to account for the space occupied by the scrollbar.
+		// 增加宽度以计算滚动条占用的空间。
 		cross := l.state.Axis.Convert(listDims.Size)
 		cross.Y += barWidth
 		listDims.Size = l.state.Axis.Convert(cross)

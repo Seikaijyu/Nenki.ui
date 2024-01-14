@@ -6,9 +6,15 @@ import (
 	"nenki.ui/widget/anchor"
 )
 
+type rowLayoutConfig struct {
+	// 是否更新组件
+	update bool
+	// 删除事件
+	_destroy func()
+}
+
 type RowLayout struct {
-	// 是否被删除
-	isRemove         bool
+	config           *rowLayoutConfig
 	margin           *glayout.Inset
 	childWidgets     []WidgetInterface
 	flexChilds       []glayout.FlexChild
@@ -25,18 +31,39 @@ func (p *RowLayout) Then(fn func(self *RowLayout)) *RowLayout {
 	return p
 }
 
-// 是否被删除
-func (p *RowLayout) IsDestroy() bool {
-	return p.isRemove
+// 注册删除事件
+func (p *RowLayout) OnDestroy(fn func()) {
+	p.config._destroy = fn
 }
 
 // 注销自身，清理所有引用
 func (p *RowLayout) Destroy() {
-	p.isRemove = true
+	p.config.update = false
+	if p.config._destroy != nil {
+		p.config._destroy()
+		p.RemoveChildAll()
+	}
+	p.config._destroy = nil
+}
+
+// 是否可见
+func (p *RowLayout) Update(update bool) {
+	p.config.update = update
+}
+
+// 重新设置父节点
+func (p *RowLayout) ResetParent(child WidgetInterface) {
+	child.Destroy()
+	child.Update(true)
+	child.OnDestroy(func() {
+		child.Update(false)
+		p.RemoveChild(child)
+	})
 }
 
 // 添加子节点，并且可以定义权重
 func (p *RowLayout) AppendFlexChild(weight float32, child WidgetInterface) *RowLayout {
+	p.ResetParent(child)
 	p.childWidgets = append(p.childWidgets, child)
 	p.flexChilds = append(p.flexChilds, glayout.Flexed(weight, func(gtx glayout.Context) glayout.Dimensions {
 		return child.Layout(gtx)
@@ -46,6 +73,7 @@ func (p *RowLayout) AppendFlexChild(weight float32, child WidgetInterface) *RowL
 
 // 添加子节点，可以根据方向进行布局堆叠
 func (p *RowLayout) AppendFlexAnchorChild(weight float32, direction anchor.Direction, child WidgetInterface) *RowLayout {
+	p.ResetParent(child)
 	p.childWidgets = append(p.childWidgets, child)
 	p.flexChilds = append(p.flexChilds, glayout.Flexed(weight, func(gtx glayout.Context) glayout.Dimensions {
 		return direction.Layout(gtx, child.Layout)
@@ -55,10 +83,25 @@ func (p *RowLayout) AppendFlexAnchorChild(weight float32, direction anchor.Direc
 
 // 添加子节点，组件得到基于子组件的固定空间
 func (p *RowLayout) AppendRigidChild(child WidgetInterface) *RowLayout {
+	p.ResetParent(child)
 	p.childWidgets = append(p.childWidgets, child)
 	p.flexChilds = append(p.flexChilds, glayout.Rigid(func(gtx glayout.Context) glayout.Dimensions {
 		return child.Layout(gtx)
 	}))
+	return p
+}
+
+// 从组件删除子节点
+func (p *RowLayout) RemoveChild(child WidgetInterface) *RowLayout {
+	// 为了加速删除，这里使用异步删除
+	go func() {
+		for i, _child := range p.childWidgets {
+			if _child == child {
+				p.RemoveChildAt(i)
+				break
+			}
+		}
+	}()
 	return p
 }
 
@@ -110,6 +153,9 @@ func (p *RowLayout) Margin(Top, Left, Bottom, Right float32) *RowLayout {
 
 // 渲染UI
 func (p *RowLayout) Layout(gtx glayout.Context) glayout.Dimensions {
+	if !p.config.update {
+		return glayout.Dimensions{}
+	}
 	return p.margin.Layout(gtx, func(gtx glayout.Context) glayout.Dimensions {
 		return p.HorizontalWidget.Layout(gtx, p.flexChilds...)
 	})
@@ -122,5 +168,6 @@ func NewRowLayout() *RowLayout {
 		margin:           &glayout.Inset{},
 		flexChilds:       []glayout.FlexChild{},
 		HorizontalWidget: &glayout.Flex{Axis: glayout.Horizontal},
+		config:           &rowLayoutConfig{update: true},
 	}
 }

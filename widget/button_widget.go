@@ -12,7 +12,10 @@ import (
 
 // 按钮配置
 type buttonConfig struct {
-
+	// 是否更新组件
+	update bool
+	// 删除事件
+	_destroy func()
 	// 鼠标点击事件
 	_clicked func(*Button)
 	// 模拟点击
@@ -30,8 +33,6 @@ type Button struct {
 	config *buttonConfig
 	// 主题
 	button gmaterial.ButtonStyle
-	// 组件是否被删除
-	isRemove bool
 	// 记录点击次数
 	clickCount int
 	// 上一次点击时间
@@ -47,14 +48,23 @@ func (p *Button) Then(fn func(self *Button)) *Button {
 	return p
 }
 
-// 是否被删除
-func (p *Button) IsDestroy() bool {
-	return p.isRemove
+// 注册删除事件
+func (p *Button) OnDestroy(fn func()) {
+	p.config._destroy = fn
 }
 
-// 注销自身，清理所有引用
+// 删除组件
 func (p *Button) Destroy() {
-	p.isRemove = true
+	p.config.update = false
+	if p.config._destroy != nil {
+		p.config._destroy()
+	}
+	p.config._destroy = nil
+}
+
+// 是否更新组件
+func (p *Button) Update(update bool) {
+	p.config.update = update
 }
 
 // 设置焦点为按钮
@@ -155,6 +165,9 @@ func (p *Button) OnLongClicked(fn func(*Button)) *Button {
 
 // 布局
 func (p *Button) Layout(gtx glayout.Context) glayout.Dimensions {
+	if !p.config.update {
+		return glayout.Dimensions{}
+	}
 	// 悬浮事件
 	if p.config._hovered != nil && p.button.Button.Hovered() {
 		p.config._hovered(p)
@@ -226,7 +239,7 @@ func NewButton(text string) *Button {
 		clickCount:    0,
 		lastClickTime: time.Time{},
 		margin:        &glayout.Inset{},
-		config:        &buttonConfig{},
+		config:        &buttonConfig{update: true},
 		button:        gmaterial.Button(gmaterial.NewTheme(), &gwidget.Clickable{}, text),
 	}
 	return widget

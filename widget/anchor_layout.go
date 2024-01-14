@@ -10,8 +10,18 @@ import (
 var _ WidgetInterface = &AnchorLayout{}
 var _ SingleChildLayoutInterface[*AnchorLayout] = &AnchorLayout{}
 
+// 锚点布局配置
+type anchorLayoutConfig struct {
+	// 是否更新组件
+	update bool
+	// 删除事件
+	_destroy func()
+}
+
 // 锚定布局
 type AnchorLayout struct {
+	// 配置
+	config *anchorLayoutConfig
 	// 内边距
 	padding *glayout.Inset
 	// 外边距
@@ -20,14 +30,32 @@ type AnchorLayout struct {
 	childWidget WidgetInterface
 	// 配置
 	direction anchor.Direction
-	// 组件是否被删除
-	isRemove bool
 }
 
 // 绑定函数
 func (p *AnchorLayout) Then(fn func(self *AnchorLayout)) *AnchorLayout {
 	fn(p)
 	return p
+}
+
+// 注册删除事件
+func (p *AnchorLayout) OnDestroy(fn func()) {
+	p.config._destroy = fn
+}
+
+// 是否更新组件
+func (p *AnchorLayout) Update(update bool) {
+	p.config.update = update
+}
+
+// 重新设置父节点
+func (p *AnchorLayout) ResetParent(child WidgetInterface) {
+	child.Destroy()
+	child.Update(true)
+	child.OnDestroy(func() {
+		child.Update(false)
+		p.RemoveChild()
+	})
 }
 
 // 设置子节点
@@ -47,21 +75,13 @@ func (p *AnchorLayout) RemoveChild() *AnchorLayout {
 	return p
 }
 
-// 是否被删除
-func (p *AnchorLayout) IsDestroy() bool {
-	return p.isRemove
-}
-
 // 删除自身
 func (p *AnchorLayout) Destroy() {
-	// 如果有子节点
-	if p.childWidget != nil {
-		// 注销子节点
-		p.childWidget.Destroy()
-		// 断开子节点
-		p.RemoveChild()
+	p.config.update = false
+	if p.config._destroy != nil {
+		p.config._destroy()
 	}
-	p.isRemove = true
+	p.config._destroy = nil
 }
 
 // 设置外边距
@@ -83,19 +103,12 @@ func (p *AnchorLayout) Direction(direc anchor.Direction) *AnchorLayout {
 
 // 渲染
 func (p *AnchorLayout) Layout(gtx glayout.Context) (dimensions glayout.Dimensions) {
+	if !p.config.update || p.childWidget == nil {
+		return glayout.Dimensions{}
+	}
 	return p.margin.Layout(gtx, func(gtx glayout.Context) glayout.Dimensions {
 		return p.direction.Layout(gtx, func(gtx glayout.Context) glayout.Dimensions {
-			// 如果有子节点
-			if p.childWidget != nil {
-				// 如果子节点被删除
-				if p.childWidget.IsDestroy() {
-					// 断开子节点
-					p.RemoveChild()
-				} else {
-					return p.childWidget.Layout(gtx)
-				}
-			}
-			return glayout.Dimensions{Size: gtx.Constraints.Max}
+			return p.childWidget.Layout(gtx)
 		})
 	})
 }
@@ -108,6 +121,7 @@ func NewAnchorLayout(direction anchor.Direction) *AnchorLayout {
 		direction:   direction,
 		padding:     &glayout.Inset{},
 		margin:      &glayout.Inset{},
+		config:      &anchorLayoutConfig{update: true},
 	}
 	return widget
 }
