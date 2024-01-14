@@ -42,7 +42,7 @@ type Button struct {
 var _ WidgetInterface = &Button{}
 
 // 绑定函数
-func (p *Button) Then(fn func(*Button)) *Button {
+func (p *Button) Then(fn func(self *Button)) *Button {
 	fn(p)
 	return p
 }

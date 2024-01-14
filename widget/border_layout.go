@@ -28,7 +28,7 @@ type Border struct {
 }
 
 // 绑定函数
-func (p *Border) Then(fn func(*Border)) *Border {
+func (p *Border) Then(fn func(self *Border)) *Border {
 	fn(p)
 	return p
 }

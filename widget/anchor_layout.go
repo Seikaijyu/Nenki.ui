@@ -25,7 +25,7 @@ type AnchorLayout struct {
 }
 
 // 绑定函数
-func (p *AnchorLayout) Then(fn func(*AnchorLayout)) *AnchorLayout {
+func (p *AnchorLayout) Then(fn func(self *AnchorLayout)) *AnchorLayout {
 	fn(p)
 	return p
 }

@@ -33,7 +33,7 @@ type ContainerLayout struct {
 }
 
 // 绑定函数
-func (p *ContainerLayout) Then(fn func(*ContainerLayout)) *ContainerLayout {
+func (p *ContainerLayout) Then(fn func(self *ContainerLayout)) *ContainerLayout {
 	fn(p)
 	return p
 }

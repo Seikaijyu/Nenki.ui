@@ -36,7 +36,7 @@ type Editor struct {
 }
 
 // 绑定函数
-func (p *Editor) Then(fn func(*Editor)) *Editor {
+func (p *Editor) Then(fn func(self *Editor)) *Editor {
 	fn(p)
 	return p
 }
@@ -172,8 +172,8 @@ func (p *Editor) Submit(submit bool) *Editor {
 	return p
 }
 
-// 设置最大行数
-func (p *Editor) MaxLines(maxLines int) *Editor {
+// 设置最可输入长度
+func (p *Editor) MaxLength(maxLines int) *Editor {
 	p.editorMaterial.Editor.MaxLen = maxLines
 	return p
 }
@@ -301,7 +301,6 @@ func (p *Editor) KeyboardType(keyboardType text.InputHint) *Editor {
 // 创建编辑框
 func NewEditor(hint string) *Editor {
 	editorMaterial := gmaterial.Editor(gmaterial.NewTheme(), &gwidget.Editor{}, hint)
-
 	return &Editor{
 		config:         &editorConfig{},
 		margin:         &glayout.Inset{},

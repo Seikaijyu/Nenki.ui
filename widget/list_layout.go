@@ -24,7 +24,7 @@ var _ WidgetInterface = &ListLayout{}
 var _ MultiChildLayoutInterface[*ListLayout] = &ListLayout{}
 
 // 绑定函数
-func (p *ListLayout) Then(fn func(*ListLayout)) *ListLayout {
+func (p *ListLayout) Then(fn func(self *ListLayout)) *ListLayout {
 	fn(p)
 	return p
 }

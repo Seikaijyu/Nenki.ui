@@ -19,7 +19,6 @@ import (
 	gwidget "gioui.org/widget"
 	"gioui.org/widget/material"
 	"nenki.ui/app"
-	"nenki.ui/utils"
 	"nenki.ui/widget"
 	"nenki.ui/widget/edge"
 )
@@ -27,21 +26,26 @@ import (
 func main() {
 
 	//Test()
-	app.NewApp("测试").Size(600, 1000).MinSize(600, 1000).MaxSize(600, 1000).Title("测试窗口").DragFiles(true).
+	app.NewApp("测试").Size(600, 100).MinSize(600, 100).MaxSize(600, 100).Title("测试窗口").DragFiles(true).
 		Then(func(self *app.App, root *widget.ContainerLayout) {
 
 			cloumn := widget.NewColumnLayout()
 			root.AppendChild(cloumn)
 			editor := widget.NewEditor("请随便输入什么文字").Then(func(self *widget.Editor) {
-				self.Submit(true).MaxLines(1).FontSize(20).Margin(edge.All(10))
-				self.OnSubmit(func(text string) {
-					fmt.Println("回车了", text)
+				self.SingleLine(true).Submit(true).FontSize(20).Margin(edge.All(10)).Then(func(self *widget.Editor) {
+					self.OnSubmit(func(text string) {
+						self.Text("")
+						self.Focus()
+					})
 				})
 			})
-			submit := widget.NewButton("提交").Margin(edge.All(10)).CornerRadius(0)
-			cloumn.AppendFlexChild(0.1, widget.NewContainerLayout().Background(utils.HexToRGBA("#0fc0ff")))
-			cloumn.AppendFlexChild(1, widget.NewBorder(editor).Margin(edge.All(1)))
-			cloumn.AppendFlexChild(0.1, submit)
+			cloumn.AppendRigidChild(widget.NewBorder(editor).Margin(edge.All(1)))
+			cloumn.AppendRigidChild(widget.NewButton("提交").Margin(edge.All(5)).CornerRadius(0).Then(func(self *widget.Button) {
+				self.OnClicked(func(b *widget.Button) {
+					editor.Text("")
+					editor.Focus()
+				})
+			}))
 		})
 	// 阻塞
 	app.Run()

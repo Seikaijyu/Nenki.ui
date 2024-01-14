@@ -20,7 +20,7 @@ var _ WidgetInterface = &ColumnLayout{}
 var _ MultiChildLayoutInterface[*ColumnLayout] = &ColumnLayout{}
 
 // 绑定函数
-func (p *ColumnLayout) Then(fn func(*ColumnLayout)) *ColumnLayout {
+func (p *ColumnLayout) Then(fn func(self *ColumnLayout)) *ColumnLayout {
 	fn(p)
 	return p
 }
@@ -35,7 +35,7 @@ func (p *ColumnLayout) Destroy() {
 	p.isRemove = true
 }
 
-// 添加多个子节点，并且可以定义权重
+// 添加子节点，并且可以定义权重
 func (p *ColumnLayout) AppendFlexChild(weight float32, child WidgetInterface) *ColumnLayout {
 	p.childWidgets = append(p.childWidgets, child)
 	p.flexChilds = append(p.flexChilds, glayout.Flexed(weight, func(gtx glayout.Context) glayout.Dimensions {
@@ -44,29 +44,16 @@ func (p *ColumnLayout) AppendFlexChild(weight float32, child WidgetInterface) *C
 	return p
 }
 
-// 添加多个子节点，可以根据方向进行布局堆叠
-func (p *ColumnLayout) AppendStackedAnchorChild(direction anchor.Direction, child WidgetInterface) *ColumnLayout {
+// 添加子节点，可以根据方向进行布局堆叠
+func (p *ColumnLayout) AppendFlexAnchorChild(weight float32, direction anchor.Direction, child WidgetInterface) *ColumnLayout {
 	p.childWidgets = append(p.childWidgets, child)
-	p.flexChilds = append(p.flexChilds, glayout.Rigid(func(gtx glayout.Context) glayout.Dimensions {
-		return glayout.Stack{Alignment: direction}.Layout(gtx, glayout.Stacked(func(gtx glayout.Context) glayout.Dimensions {
-			return child.Layout(gtx)
-		}))
+	p.flexChilds = append(p.flexChilds, glayout.Flexed(weight, func(gtx glayout.Context) glayout.Dimensions {
+		return direction.Layout(gtx, child.Layout)
 	}))
 	return p
 }
 
-// 添加多个子节点，可以进行堆叠
-func (p *ColumnLayout) AppendStackedChild(child WidgetInterface) *ColumnLayout {
-	p.childWidgets = append(p.childWidgets, child)
-	p.flexChilds = append(p.flexChilds, glayout.Rigid(func(gtx glayout.Context) glayout.Dimensions {
-		return glayout.Stack{}.Layout(gtx, glayout.Stacked(func(gtx glayout.Context) glayout.Dimensions {
-			return child.Layout(gtx)
-		}))
-	}))
-	return p
-}
-
-// 添加多个子节点，组件得到基于子组件的固定空间
+// 添加子节点，组件得到基于子组件的固定空间
 func (p *ColumnLayout) AppendRigidChild(child WidgetInterface) *ColumnLayout {
 	p.childWidgets = append(p.childWidgets, child)
 	p.flexChilds = append(p.flexChilds, glayout.Rigid(func(gtx glayout.Context) glayout.Dimensions {
