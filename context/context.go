@@ -124,7 +124,7 @@ func NewAppUI(window *gio.Window) *AppUI {
 		singleUpdateHandler: &Queue[func(glayout.Context)]{},
 		config:              &contextConfig{},
 	}
-
+	uiContext.uiWidget.OnDestroy(func() {})
 	go func() {
 		// 进行UI循环
 		if err := uiContext.loop(); err != nil {

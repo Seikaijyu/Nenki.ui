@@ -80,6 +80,7 @@ func (p *AnchorLayout) Destroy() {
 	p.config.update = false
 	if p.config._destroy != nil {
 		p.config._destroy()
+		p.childWidget.Destroy()
 	}
 	p.config._destroy = nil
 }

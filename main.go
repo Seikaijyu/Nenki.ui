@@ -56,23 +56,9 @@ func main() {
 
 			h.AppendFlexChild(1, v)
 
-			for i := 0; i < 50000; i++ {
+			for i := 0; i < 50; i++ {
 				v.AppendChild(widget.NewButton(fmt.Sprintf("item %d", i)).FontSize(20).CornerRadius(0))
-				if i%10 == 0 {
-					v.RemoveChildAt(0)
-				}
 			}
-			v.Destroy()
-			go func() {
-				time.Sleep(5 * time.Second)
-				runtime.GC()
-				printMemStat(ms)
-				go func() {
-					time.Sleep(5 * time.Second)
-					runtime.GC()
-					printMemStat(ms)
-				}()
-			}()
 
 		})
 

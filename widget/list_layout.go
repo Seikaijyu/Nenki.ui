@@ -49,7 +49,6 @@ func (p *ListLayout) Destroy() {
 	if p.config._destroy != nil {
 		p.config._destroy()
 		p.RemoveChildAll()
-
 	}
 
 	p.config._destroy = nil
