@@ -2,12 +2,8 @@ package main
 
 import (
 	_ "embed"
-	"fmt"
 	"log"
 	"os"
-	"runtime"
-	"sync"
-	"time"
 
 	appx "gioui.org/app"
 	"gioui.org/font/gofont"
@@ -19,46 +15,16 @@ import (
 	"gioui.org/widget/material"
 	"nenki.ui/app"
 	"nenki.ui/widget"
-	"nenki.ui/widget/axis"
 )
 
-func printMemStat(ms runtime.MemStats) {
-	runtime.ReadMemStats(&ms)
-	fmt.Println("--------------------------------------")
-	fmt.Println("Memory Statistics Reporting time: ", time.Now())
-	fmt.Println("--------------------------------------")
-	fmt.Println("Bytes of allocated heap objects: ", ms.Alloc)
-	fmt.Println("Total bytes of Heap object: ", ms.TotalAlloc)
-	fmt.Println("Bytes of memory obtained from OS: ", ms.Sys)
-	fmt.Println("Count of heap objects: ", ms.Mallocs)
-	fmt.Println("Count of heap objects freed: ", ms.Frees)
-	fmt.Println("Count of live heap objects", ms.Mallocs-ms.Frees)
-	fmt.Println("Number of completed GC cycles: ", ms.NumGC)
-	fmt.Println("--------------------------------------")
-}
-
-var buttonPool = sync.Pool{
-	New: func() interface{} {
-		return new(widget.Button)
-	},
-}
-
 func main() {
-	var ms runtime.MemStats
-	printMemStat(ms)
 	//Test()
 	app.NewApp("测试").Size(1024, 1024).Title("你好").DragFiles(true).
 		Then(func(self *app.App, root *widget.ContainerLayout) {
-			h := widget.NewRowLayout()
+			h := widget.NewColumnLayout()
 			root.AppendChild(h)
-			v := widget.NewListLayout(axis.Vertical).ScrollToEnd(true)
-			h.AppendFlexChild(0.5, widget.NewButton("float").FontSize(60).CornerRadius(10))
-
-			h.AppendFlexChild(1, v)
-
-			for i := 0; i < 50; i++ {
-				v.AppendChild(widget.NewButton(fmt.Sprintf("item %d", i)).FontSize(20).CornerRadius(0))
-			}
+			h.AppendRigidChild(widget.NewCheckBox("确实是这样的"))
+			h.AppendRigidChild(widget.NewCheckBox("并不是这样的"))
 
 		})
 

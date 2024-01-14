@@ -10,7 +10,6 @@ import (
 	"gioui.org/internal/f32color"
 	"gioui.org/layout"
 	"gioui.org/op"
-	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/text"
 	"gioui.org/unit"
@@ -39,46 +38,30 @@ func (c *checkable) layout(gtx layout.Context, checked, hovered bool) layout.Dim
 
 	dims := layout.Flex{Alignment: layout.Middle}.Layout(gtx,
 		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-			return layout.Stack{Alignment: layout.Center}.Layout(gtx,
+
+			return layout.Stack{Alignment: layout.N}.Layout(gtx,
+
 				layout.Stacked(func(gtx layout.Context) layout.Dimensions {
-					size := gtx.Dp(c.Size) * 4 / 3
-					dims := layout.Dimensions{
+					defer op.Offset(image.Pt(0, 2)).Push(gtx.Ops).Pop()
+					size := gtx.Dp(c.Size)
+					col := c.IconColor
+					if gtx.Queue == nil {
+						col = f32color.Disabled(col)
+					}
+					gtx.Constraints.Min = image.Point{X: size}
+					icon.Layout(gtx, col)
+					return layout.Dimensions{
 						Size: image.Point{X: size, Y: size},
 					}
-					if !hovered {
-						return dims
-					}
-
-					background := f32color.MulAlpha(c.IconColor, 70)
-
-					b := image.Rectangle{Max: image.Pt(size, size)}
-					paint.FillShape(gtx.Ops, background, clip.Ellipse(b).Op(gtx.Ops))
-
-					return dims
-				}),
-				layout.Stacked(func(gtx layout.Context) layout.Dimensions {
-					return layout.UniformInset(2).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-						size := gtx.Dp(c.Size)
-						col := c.IconColor
-						if gtx.Queue == nil {
-							col = f32color.Disabled(col)
-						}
-						gtx.Constraints.Min = image.Point{X: size}
-						icon.Layout(gtx, col)
-						return layout.Dimensions{
-							Size: image.Point{X: size, Y: size},
-						}
-					})
 				}),
 			)
 		}),
-
 		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-			return layout.UniformInset(2).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-				colMacro := op.Record(gtx.Ops)
-				paint.ColorOp{Color: c.Color}.Add(gtx.Ops)
-				return widget.Label{}.Layout(gtx, c.shaper, c.Font, c.TextSize, c.Label, colMacro.Stop())
-			})
+			defer op.Offset(image.Pt(0, 0)).Push(gtx.Ops).Pop()
+			colMacro := op.Record(gtx.Ops)
+			paint.ColorOp{Color: c.Color}.Add(gtx.Ops)
+
+			return widget.Label{}.Layout(gtx, c.shaper, c.Font, c.TextSize, c.Label, colMacro.Stop())
 		}),
 	)
 	return dims
