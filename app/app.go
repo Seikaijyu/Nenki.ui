@@ -4,6 +4,7 @@ package app
 
 import (
 	"image/color"
+	"os"
 	"runtime"
 
 	gapp "gioui.org/app"
@@ -93,6 +94,11 @@ func (p *App) Size(width, height float32) *App {
 func (p *App) MinSize(width, height float32) *App {
 	p.window.Option(gapp.MinSize(gunit.Dp(width), gunit.Dp(height)))
 	return p
+}
+
+// 退出应用
+func Exit() {
+	os.Exit(0)
 }
 
 // 设置窗口最大尺寸

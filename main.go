@@ -1,14 +1,11 @@
-// SPDX-License-Identifier: Unlicense OR MIT
-
 package main
-
-// A simple Gio program. See https://gioui.org for more information.
 
 import (
 	_ "embed"
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	appx "gioui.org/app"
 	"gioui.org/font/gofont"
@@ -26,11 +23,10 @@ import (
 func main() {
 
 	//Test()
-	app.NewApp("测试").Size(600, 100).MinSize(600, 100).MaxSize(600, 100).Title("测试窗口").DragFiles(true).
+	app.NewApp("测试").Size(600, 160).MinSize(600, 160).MaxSize(600, 160).Title("测试窗口").Decorated(false).DragFiles(true).
 		Then(func(self *app.App, root *widget.ContainerLayout) {
-
 			cloumn := widget.NewColumnLayout()
-			root.AppendChild(cloumn)
+			root.AppendChild(cloumn).Margin(edge.All(10))
 			editor := widget.NewEditor("请随便输入什么文字").Then(func(self *widget.Editor) {
 				self.SingleLine(true).Submit(true).FontSize(20).Margin(edge.All(10)).Then(func(self *widget.Editor) {
 					self.OnSubmit(func(text string) {
@@ -39,11 +35,19 @@ func main() {
 					})
 				})
 			})
-			cloumn.AppendRigidChild(widget.NewBorder(editor).Margin(edge.All(1)))
-			cloumn.AppendRigidChild(widget.NewButton("提交").Margin(edge.All(5)).CornerRadius(0).Then(func(self *widget.Button) {
+			cloumn.AppendRigidChild(widget.NewBorder(editor).Margin(edge.Bottom.FromDirection(5)))
+			cloumn.AppendRigidChild(widget.NewButton("提交").CornerRadius(0).Then(func(self *widget.Button) {
 				self.OnClicked(func(b *widget.Button) {
 					editor.Text("")
 					editor.Focus()
+				})
+			}))
+			cloumn.AppendRigidChild(widget.NewButton("关闭").Margin(edge.Top.FromDirection(5)).CornerRadius(0).Then(func(self *widget.Button) {
+				self.OnClicked(func(b *widget.Button) {
+					go func() {
+						time.Sleep(time.Second / 3)
+						app.Exit()
+					}()
 				})
 			}))
 		})
