@@ -6,9 +6,6 @@ import (
 	"log"
 	"os"
 
-	"net/http"
-	_ "net/http/pprof"
-
 	appx "gioui.org/app"
 	"gioui.org/font/gofont"
 	"gioui.org/io/system"
@@ -24,9 +21,6 @@ import (
 )
 
 func main() {
-	go func() {
-		log.Fatal(http.ListenAndServe("localhost:6060", nil))
-	}()
 	//Test()
 	app.NewApp("测试").Title("Layout").
 		Then(func(self *app.App, root *widget.ContainerLayout) {
@@ -34,12 +28,13 @@ func main() {
 			root.AppendChild(widget.NewRowLayout().
 				Then(func(row *widget.RowLayout) {
 					self.Then(func(self *app.App, root *widget.ContainerLayout) {
-						list := widget.NewListLayout(axis.Vertical)
+						list := widget.NewListLayout(axis.Vertical).ScrollMinLen(30)
 						cloumn2 := widget.NewColumnLayout()
 						row.AppendFlexChild(2.5, widget.NewBorder(list))
 						row.AppendFlexChild(6, widget.NewBorder(cloumn2))
-						for i := 0; i < 100000; i++ {
-							list.AppendChild(widget.NewBorder(widget.NewCheckBox(fmt.Sprintf("测试%d", i))))
+						for i := 0; i < 1000000; i++ {
+							list.AppendChild(widget.NewBorder(widget.NewButton(fmt.Sprintf("Item %d", i)).
+								CornerRadius(0).Background(utils.HexToRGBA("#00fff00f")).FontColor(utils.HexToRGBA("#000000"))))
 						}
 						cloumn2.AppendFlexChild(1, widget.NewBorder(widget.NewContainerLayout()))
 						cloumn2.AppendFlexChild(8, widget.NewBorder(widget.NewContainerLayout()))
