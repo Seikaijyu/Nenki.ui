@@ -6,9 +6,9 @@ import (
 	glayout "gioui.org/layout"
 	gunit "gioui.org/unit"
 	gwidget "gioui.org/widget"
-	"gioui.org/widget/material"
 	gmaterial "gioui.org/widget/material"
 	"nenki.ui/widget/axis"
+	"nenki.ui/widget/theme"
 )
 
 // 校验接口是否实现
@@ -193,7 +193,7 @@ func (p *RadioButtons) Axis(axis axis.Axis) *RadioButtons {
 func NewRadioButtons(axis axis.Axis) *RadioButtons {
 	radioWidget := &RadioButtons{
 		radioEnum:  &gwidget.Enum{},
-		radioTheme: material.NewTheme(),
+		radioTheme: theme.NewTheme(),
 		flexChilds: []glayout.FlexChild{},
 		config: &radioButtonsConfig{
 			update: true, size: 16,

@@ -7,6 +7,7 @@ import (
 	gunit "gioui.org/unit"
 	gwidget "gioui.org/widget"
 	gmaterial "gioui.org/widget/material"
+	"nenki.ui/widget/theme"
 )
 
 // 校验接口是否实现
@@ -39,6 +40,7 @@ type CheckBox struct {
 
 // 绑定函数
 func (p *CheckBox) Then(fn func(self *CheckBox)) *CheckBox {
+
 	fn(p)
 	return p
 }
@@ -158,7 +160,7 @@ func (p *CheckBox) OnFocused(fn func(*CheckBox, bool)) *CheckBox {
 // 创建复选框
 func NewCheckBox(text string) *CheckBox {
 	checkBool := gwidget.Bool{}
-	widget := gmaterial.CheckBox(gmaterial.NewTheme(), &checkBool, text)
+	widget := gmaterial.CheckBox(theme.NewTheme(), &checkBool, text)
 	checkBox := &CheckBox{
 		checkBool:      &checkBool,
 		checkBoxWidget: &widget,

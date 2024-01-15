@@ -6,6 +6,9 @@ import (
 	"log"
 	"os"
 
+	"net/http"
+	_ "net/http/pprof"
+
 	appx "gioui.org/app"
 	"gioui.org/font/gofont"
 	"gioui.org/io/system"
@@ -15,21 +18,34 @@ import (
 	gwidget "gioui.org/widget"
 	"gioui.org/widget/material"
 	"nenki.ui/app"
+	"nenki.ui/utils"
 	"nenki.ui/widget"
 	"nenki.ui/widget/axis"
 )
 
 func main() {
+	go func() {
+		log.Fatal(http.ListenAndServe("localhost:6060", nil))
+	}()
 	//Test()
-	app.NewApp("测试").Size(1024, 1024).Title("你好").DragFiles(true).
+	app.NewApp("测试").Title("Layout").
 		Then(func(self *app.App, root *widget.ContainerLayout) {
-			b := widget.NewRadioButtons(axis.Horizontal)
-			b.AppendRadioButton("1", "测试1")
-			b.AppendRadioButton("2", "测试2")
-			b.OnSelected(func(p *widget.RadioButtons, check string) {
-				fmt.Println(check)
-			})
-			root.AppendChild(b)
+			self.Background(utils.HexToRGBA("#00ffac0a"))
+			root.AppendChild(widget.NewRowLayout().
+				Then(func(row *widget.RowLayout) {
+					self.Then(func(self *app.App, root *widget.ContainerLayout) {
+						list := widget.NewListLayout(axis.Vertical)
+						cloumn2 := widget.NewColumnLayout()
+						row.AppendFlexChild(2.5, widget.NewBorder(list))
+						row.AppendFlexChild(6, widget.NewBorder(cloumn2))
+						for i := 0; i < 100000; i++ {
+							list.AppendChild(widget.NewBorder(widget.NewCheckBox(fmt.Sprintf("测试%d", i))))
+						}
+						cloumn2.AppendFlexChild(1, widget.NewBorder(widget.NewContainerLayout()))
+						cloumn2.AppendFlexChild(8, widget.NewBorder(widget.NewContainerLayout()))
+					})
+				}),
+			)
 		})
 
 	// 阻塞

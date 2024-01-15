@@ -111,7 +111,7 @@ func (p *ContainerLayout) Background(r, g, b, a uint8) *ContainerLayout {
 // 渲染
 func (p *ContainerLayout) Layout(gtx glayout.Context) (dimensions glayout.Dimensions) {
 	if !p.config.update || p.childWidget == nil {
-		return glayout.Dimensions{}
+		return glayout.Dimensions{Size: gtx.Constraints.Max}
 	}
 	return p.margin.Layout(gtx, func(gtx glayout.Context) glayout.Dimensions {
 		var stack = clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops)

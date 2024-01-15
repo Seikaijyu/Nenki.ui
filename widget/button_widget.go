@@ -8,6 +8,7 @@ import (
 	gunit "gioui.org/unit"
 	gwidget "gioui.org/widget"
 	gmaterial "gioui.org/widget/material"
+	"nenki.ui/widget/theme"
 )
 
 // 按钮配置
@@ -247,7 +248,7 @@ func NewButton(text string) *Button {
 		lastClickTime: time.Time{},
 		margin:        &glayout.Inset{},
 		config:        &buttonConfig{update: true},
-		button:        gmaterial.Button(gmaterial.NewTheme(), &gwidget.Clickable{}, text),
+		button:        gmaterial.Button(theme.NewTheme(), &gwidget.Clickable{}, text),
 	}
 	return widget
 }

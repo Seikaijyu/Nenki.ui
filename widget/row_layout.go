@@ -65,9 +65,7 @@ func (p *RowLayout) ResetParent(child WidgetInterface) {
 func (p *RowLayout) AppendFlexChild(weight float32, child WidgetInterface) *RowLayout {
 	p.ResetParent(child)
 	p.childWidgets = append(p.childWidgets, child)
-	p.flexChilds = append(p.flexChilds, glayout.Flexed(weight, func(gtx glayout.Context) glayout.Dimensions {
-		return child.Layout(gtx)
-	}))
+	p.flexChilds = append(p.flexChilds, glayout.Flexed(weight, child.Layout))
 	return p
 }
 
@@ -85,9 +83,7 @@ func (p *RowLayout) AppendFlexAnchorChild(weight float32, direction anchor.Direc
 func (p *RowLayout) AppendRigidChild(child WidgetInterface) *RowLayout {
 	p.ResetParent(child)
 	p.childWidgets = append(p.childWidgets, child)
-	p.flexChilds = append(p.flexChilds, glayout.Rigid(func(gtx glayout.Context) glayout.Dimensions {
-		return child.Layout(gtx)
-	}))
+	p.flexChilds = append(p.flexChilds, glayout.Rigid(child.Layout))
 	return p
 }
 

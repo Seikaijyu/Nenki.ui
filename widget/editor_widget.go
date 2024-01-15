@@ -8,6 +8,7 @@ import (
 	gwidget "gioui.org/widget"
 	gmaterial "gioui.org/widget/material"
 	"nenki.ui/widget/text"
+	"nenki.ui/widget/theme"
 )
 
 // 校验接口是否实现
@@ -323,7 +324,7 @@ func (p *Editor) KeyboardType(keyboardType text.InputHint) *Editor {
 
 // 创建编辑框
 func NewEditor(hint string) *Editor {
-	editorMaterial := gmaterial.Editor(gmaterial.NewTheme(), &gwidget.Editor{}, hint)
+	editorMaterial := gmaterial.Editor(theme.NewTheme(), &gwidget.Editor{}, hint)
 	return &Editor{
 		config:         &editorConfig{update: true},
 		margin:         &glayout.Inset{},
