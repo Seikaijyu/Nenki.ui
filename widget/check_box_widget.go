@@ -13,14 +13,18 @@ import (
 var _ WidgetInterface = &CheckBox{}
 
 type checkBoxConfig struct {
+	// 记录选择的bool
+	checkedBool bool
+	// 焦点事件
+	_focused func(*CheckBox, bool)
 	// 是否更新组件
 	update bool
 	// 删除事件
 	_destroy func()
 	// 鼠标悬浮事件
-	_hovered func(*CheckBox)
-	// 点击事件
-	_pressed func(*CheckBox)
+	_hovered func(*CheckBox, bool)
+	// 选择事件
+	_checked func(*CheckBox, bool)
 }
 
 // 复选框
@@ -72,16 +76,15 @@ func (p *CheckBox) Layout(gtx glayout.Context) glayout.Dimensions {
 	if !p.config.update {
 		p.config.update = false
 	}
-	if p.config._hovered != nil {
-		if p.checkBoxWidget.CheckBox.Hovered() {
-			p.config._hovered(p)
-		}
+	if p.config._hovered != nil && p.checkBoxWidget.CheckBox.Hovered() {
+		p.config._hovered(p, p.checkBool.Value)
 	}
-	if p.config._pressed != nil {
-		if p.checkBoxWidget.CheckBox.Pressed() {
-			p.config._pressed(p)
-		}
+
+	if p.config._focused != nil && p.checkBoxWidget.CheckBox.Focused() {
+		p.config._focused(p, p.checkBool.Value)
 	}
+
+	p.config.checkedBool = p.checkBool.Value
 	return p.margin.Layout(gtx, func(gtx glayout.Context) glayout.Dimensions {
 		return p.checkBoxWidget.Layout(gtx)
 	})
@@ -100,14 +103,20 @@ func (p *CheckBox) Size(size float32) *CheckBox {
 }
 
 // 鼠标悬浮事件
-func (p *CheckBox) OnHovered(fn func(*CheckBox)) *CheckBox {
+func (p *CheckBox) OnHovered(fn func(p *CheckBox, check bool)) *CheckBox {
 	p.config._hovered = fn
 	return p
 }
 
-// 鼠标按下事件
-func (p *CheckBox) OnPressed(fn func(*CheckBox)) *CheckBox {
-	p.config._pressed = fn
+// 选择事件
+func (p *CheckBox) OnChecked(fn func(p *CheckBox, check bool)) *CheckBox {
+	p.config._checked = fn
+	p.checkBool.OnChecked(func(b bool) {
+		if p.config._checked != nil {
+			p.config._checked(p, b)
+		}
+	})
+
 	return p
 }
 
@@ -140,9 +149,10 @@ func (p *CheckBox) GetChecked() bool {
 	return p.checkBool.Value
 }
 
-// 获取是否为焦点
-func (p *CheckBox) GetFocused() bool {
-	return p.checkBoxWidget.CheckBox.Focused()
+// 焦点事件
+func (p *CheckBox) OnFocused(fn func(*CheckBox, bool)) *CheckBox {
+	p.config._focused = fn
+	return p
 }
 
 // 创建复选框
@@ -152,7 +162,7 @@ func NewCheckBox(text string) *CheckBox {
 	checkBox := &CheckBox{
 		checkBool:      &checkBool,
 		checkBoxWidget: &widget,
-		config:         &checkBoxConfig{update: true},
+		config:         &checkBoxConfig{update: true, checkedBool: false},
 		margin:         &glayout.Inset{},
 	}
 	return checkBox.Size(16)

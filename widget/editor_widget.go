@@ -19,13 +19,14 @@ type editorConfig struct {
 	update bool
 	// 删除事件
 	_destroy func()
-
+	// 鼠焦点事件
+	_focused func(*Editor, string)
 	// 回车事件，仅在单行编辑时有效
-	_submit func(text string)
+	_submit func(*Editor, string)
 	// 选择事件
-	_select func(text string)
+	_select func(*Editor, string)
 	// 文本改变事件
-	_change func(text string)
+	_change func(*Editor, string)
 }
 
 // 编辑框
@@ -77,43 +78,31 @@ func (p *Editor) Layout(gtx glayout.Context) glayout.Dimensions {
 	if !p.config.update {
 		return glayout.Dimensions{}
 	}
-	return p.margin.Layout(gtx, func(gtx glayout.Context) glayout.Dimensions {
-		for _, item := range p.editorMaterial.Editor.Events() {
-			switch item.(type) {
-			case gwidget.ChangeEvent:
-				if p.config._change != nil {
-					p.config._change(p.GetText())
-				}
-			case gwidget.SubmitEvent:
-				if p.config._submit != nil {
-					p.config._submit(p.GetText())
-				}
-			case gwidget.SelectEvent:
-				if p.config._select != nil {
-					p.config._select(p.GetSelectedText())
-				}
+	for _, item := range p.editorMaterial.Editor.Events() {
+		switch item.(type) {
+		case gwidget.ChangeEvent:
+			if p.config._change != nil {
+				p.config._change(p, p.GetText())
+			}
+		case gwidget.SubmitEvent:
+			if p.config._submit != nil {
+				p.config._submit(p, p.GetText())
+			}
+		case gwidget.SelectEvent:
+			if p.config._select != nil {
+				p.config._select(p, p.GetSelectedText())
 			}
 		}
+	}
+	if p.config._focused != nil {
+		if p.editorMaterial.Editor.Focused() {
+			p.config._focused(p, p.GetText())
+		}
+	}
+
+	return p.margin.Layout(gtx, func(gtx glayout.Context) glayout.Dimensions {
 		return p.editorMaterial.Layout(gtx)
 	})
-}
-
-// 提交事件
-func (p *Editor) OnSubmit(fn func(text string)) *Editor {
-	p.config._submit = fn
-	return p
-}
-
-// 选择事件
-func (p *Editor) OnSelect(fn func(text string)) *Editor {
-	p.config._select = fn
-	return p
-}
-
-// 文本改变事件
-func (p *Editor) OnChange(fn func(text string)) *Editor {
-	p.config._change = fn
-	return p
 }
 
 // 设置只读
@@ -246,8 +235,27 @@ func (p *Editor) Focus() *Editor {
 }
 
 // 方法返回编辑器是否处于焦点状态。
-func (p *Editor) GetFocused() bool {
-	return p.editorMaterial.Editor.Focused()
+func (p *Editor) OnFocused(fn func(p *Editor, text string)) *Editor {
+	p.config._focused = fn
+	return p
+}
+
+// 提交事件
+func (p *Editor) OnSubmit(fn func(p *Editor, text string)) *Editor {
+	p.config._submit = fn
+	return p
+}
+
+// 选择事件
+func (p *Editor) OnSelect(fn func(p *Editor, text string)) *Editor {
+	p.config._select = fn
+	return p
+}
+
+// 文本改变事件
+func (p *Editor) OnChange(fn func(p *Editor, text string)) *Editor {
+	p.config._change = fn
+	return p
 }
 
 // 方法在选中处插入一段字符串

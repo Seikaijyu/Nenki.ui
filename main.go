@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "embed"
+	"fmt"
 	"log"
 	"os"
 
@@ -22,20 +23,13 @@ func main() {
 	//Test()
 	app.NewApp("测试").Size(1024, 1024).Title("你好").DragFiles(true).
 		Then(func(self *app.App, root *widget.ContainerLayout) {
-			h := widget.NewColumnLayout()
-			root.AppendChild(h)
-			a := widget.NewRadioButtons(axis.Horizontal)
-			h.AppendRigidChild(a)
-			a.Size(10)
-			a.AppendRadioButton("1", "测试1")
-			a.AppendRadioButton("2", "测试2")
-
 			b := widget.NewRadioButtons(axis.Horizontal)
-			h.AppendRigidChild(b)
-			b.Size(50)
-			b.AppendRadioButton("1", "试试")
-			b.AppendRadioButton("2", "试试s")
-
+			b.AppendRadioButton("1", "测试1")
+			b.AppendRadioButton("2", "测试2")
+			b.OnSelected(func(p *widget.RadioButtons, check string) {
+				fmt.Println(check)
+			})
+			root.AppendChild(b)
 		})
 
 	// 阻塞

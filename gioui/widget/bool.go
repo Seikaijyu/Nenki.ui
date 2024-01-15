@@ -8,9 +8,9 @@ import (
 )
 
 type Bool struct {
-	Value bool
-
-	clk Clickable
+	Value    bool
+	_checked func(bool)
+	clk      Clickable
 }
 
 // Update the widget state and report whether Value was changed.
@@ -19,6 +19,9 @@ func (b *Bool) Update(gtx layout.Context) bool {
 	for b.clk.Clicked(gtx) {
 		b.Value = !b.Value
 		changed = true
+		if b._checked != nil {
+			b._checked(b.Value)
+		}
 	}
 	return changed
 }
@@ -29,8 +32,8 @@ func (b *Bool) Hovered() bool {
 }
 
 // Pressed reports whether pointer is pressing the element.
-func (b *Bool) Pressed() bool {
-	return b.clk.Pressed()
+func (b *Bool) OnChecked(fn func(bool)) {
+	b._checked = fn
 }
 
 // Focused reports whether b has focus.

@@ -26,6 +26,8 @@ type buttonConfig struct {
 	_pressed func(*Button)
 	// 长点击
 	_longClicked func(*Button)
+	// 焦点事件
+	_focused func(*Button)
 }
 type Button struct {
 	margin *glayout.Inset
@@ -126,8 +128,9 @@ func (p *Button) Text(text string) *Button {
 }
 
 // 获取焦点状态
-func (p *Button) GetFocused() bool {
-	return p.button.Button.Focused()
+func (p *Button) OnFocused(fn func(*Button)) *Button {
+	p.config._focused = fn
+	return p
 }
 
 // 模拟点击
@@ -175,6 +178,10 @@ func (p *Button) Layout(gtx glayout.Context) glayout.Dimensions {
 	// 按下事件
 	if p.config._pressed != nil && p.button.Button.Pressed() {
 		p.config._pressed(p)
+	}
+	// 焦点事件
+	if p.config._focused != nil && p.button.Button.Focused() {
+		p.config._focused(p)
 	}
 	// 双击事件，其中实现了点击事件
 	if p.config._longClicked != nil {
