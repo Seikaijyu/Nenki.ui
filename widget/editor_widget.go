@@ -3,12 +3,13 @@ package widget
 import (
 	"image/color"
 
+	"nenki/widget/text"
+	"nenki/widget/theme"
+
 	glayout "gioui.org/layout"
 	gunit "gioui.org/unit"
 	gwidget "gioui.org/widget"
 	gmaterial "gioui.org/widget/material"
-	"nenki.ui/widget/text"
-	"nenki.ui/widget/theme"
 )
 
 // 校验接口是否实现

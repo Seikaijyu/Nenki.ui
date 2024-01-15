@@ -7,13 +7,14 @@ import (
 	"image/color"
 	"os"
 
+	"nenki/widget"
+
 	gio "gioui.org/app"
 	"gioui.org/io/system"
 	glayout "gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
-	"nenki.ui/widget"
 )
 
 // 根组件

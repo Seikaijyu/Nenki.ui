@@ -1,9 +1,10 @@
 package widget
 
 import (
+	"nenki/widget/anchor"
+
 	glayout "gioui.org/layout"
 	gunit "gioui.org/unit"
-	"nenki.ui/widget/anchor"
 )
 
 // 校验接口是否实现

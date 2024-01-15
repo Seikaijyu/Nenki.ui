@@ -1,9 +1,10 @@
 package widget
 
 import (
+	"nenki/widget/anchor"
+
 	glayout "gioui.org/layout"
 	gunit "gioui.org/unit"
-	"nenki.ui/widget/anchor"
 )
 
 type columnLayoutConfig struct {

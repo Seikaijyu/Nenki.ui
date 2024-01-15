@@ -3,11 +3,12 @@ package widget
 import (
 	"image/color"
 
+	"nenki/widget/axis"
+
 	glayout "gioui.org/layout"
 	gunit "gioui.org/unit"
 	gwidget "gioui.org/widget"
 	gmaterial "gioui.org/widget/material"
-	"nenki.ui/widget/axis"
 )
 
 // 列表配置

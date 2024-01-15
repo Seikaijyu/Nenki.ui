@@ -1,4 +1,4 @@
-module nenki.ui
+module nenki
 
 go 1.19
 
