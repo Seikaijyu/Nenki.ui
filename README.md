@@ -43,3 +43,6 @@ func main() {
 }
 
 ```
+
+运行后应该能看到以下结果
+![image](https://github.com/Seikaijyu/Nenki.ui/assets/68497295/cdcfaa47-e924-410c-96ce-42f479f984f6)
