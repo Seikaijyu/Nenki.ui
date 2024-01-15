@@ -9,10 +9,10 @@ import (
 
 	"github.com/Seikaijyu/nenki.ui/context"
 
-	gapp "github.com/Seikaijyu/gio/app"
-	glayout "github.com/Seikaijyu/gio/layout"
-	"github.com/Seikaijyu/gio/op"
-	gunit "github.com/Seikaijyu/gio/unit"
+	gapp "gioui.org/app"
+	glayout "gioui.org/layout"
+	"gioui.org/op"
+	gunit "gioui.org/unit"
 )
 
 // Orientation是应用程序的方向

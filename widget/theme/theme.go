@@ -1,8 +1,8 @@
 package theme
 
 import (
-	gtext "github.com/Seikaijyu/gio/text"
-	"github.com/Seikaijyu/gio/widget/material"
+	gtext "gioui.org/text"
+	"gioui.org/widget/material"
 )
 
 var Shaper *gtext.Shaper = &gtext.Shaper{}

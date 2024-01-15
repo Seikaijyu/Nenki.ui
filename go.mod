@@ -2,7 +2,8 @@ module github.com/Seikaijyu/nenki.ui
 
 go 1.19
 
-require github.com/Seikaijyu/gio v0.0.0-20240115175037-58b79198e5ba
+replace gioui.org => ./gioui
+
 
 require (
 	gioui.org/cpu v0.0.0-20220412190645-f1e9e8c3b1f7 // indirect
