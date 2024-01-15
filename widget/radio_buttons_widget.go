@@ -196,7 +196,7 @@ func NewRadioButtons(axis axis.Axis) *RadioButtons {
 		radioTheme: material.NewTheme(),
 		flexChilds: []glayout.FlexChild{},
 		config: &radioButtonsConfig{
-			update: true, size: 20,
+			update: true, size: 16,
 			color:     color.NRGBA{A: 255},
 			iconColor: color.NRGBA{R: 63, G: 81, B: 181, A: 255},
 		},
