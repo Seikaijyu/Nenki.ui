@@ -13,23 +13,21 @@ import (
 	"gioui.org/text"
 	gwidget "gioui.org/widget"
 	"gioui.org/widget/material"
-	"nenki.ui/app"
-	"nenki.ui/widget"
 )
 
 func main() {
-	//Test()
-	app.NewApp("测试").Size(1024, 1024).Title("你好").DragFiles(true).
-		Then(func(self *app.App, root *widget.ContainerLayout) {
-			h := widget.NewColumnLayout()
-			root.AppendChild(h)
-			h.AppendRigidChild(widget.NewCheckBox("确实是这样的"))
-			h.AppendRigidChild(widget.NewCheckBox("并不是这样的"))
+	Test()
+	// app.NewApp("测试").Size(1024, 1024).Title("你好").DragFiles(true).
+	// 	Then(func(self *app.App, root *widget.ContainerLayout) {
+	// 		h := widget.NewColumnLayout()
+	// 		root.AppendChild(h)
+	// 		h.AppendRigidChild(widget.NewCheckBox("确实是这样的"))
+	// 		h.AppendRigidChild(widget.NewCheckBox("并不是这样的"))
 
-		})
+	// 	})
 
-	// 阻塞
-	app.Run()
+	// // 阻塞
+	// app.Run()
 }
 
 func Test() {
@@ -44,8 +42,7 @@ func Test() {
 }
 
 func loop(w *appx.Window) error {
-	var a gwidget.Bool = gwidget.Bool{}
-	var b gwidget.Bool = gwidget.Bool{}
+	var a gwidget.Enum = gwidget.Enum{}
 	th := material.NewTheme()
 
 	th.Shaper = text.NewShaper(text.WithCollection(gofont.Collection()))
@@ -58,9 +55,9 @@ func loop(w *appx.Window) error {
 		case system.FrameEvent:
 			gtx := layout.NewContext(&ops, e)
 			layout.N.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-				return layout.Flex{Axis: layout.Horizontal}.Layout(gtx,
-					layout.Rigid(material.CheckBox(th, &a, "测试1").Layout),
-					layout.Rigid(material.CheckBox(th, &b, "测试2").Layout),
+				return layout.Flex{Axis: layout.Vertical, Spacing: layout.SpaceEnd}.Layout(gtx,
+					layout.Rigid(material.RadioButton(th, &a, "1", "测试1").Layout),
+					layout.Rigid(material.RadioButton(th, &a, "2", "测试2").Layout),
 				)
 			})
 			e.Frame(gtx.Ops)

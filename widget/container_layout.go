@@ -7,7 +7,6 @@ import (
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	gunit "gioui.org/unit"
-	"nenki.ui/widget/anchor"
 )
 
 // 校验接口是否实现
@@ -21,8 +20,6 @@ type containerConfig struct {
 	_destroy func()
 	// 背景颜色
 	background *color.NRGBA
-	// 锚定方向
-	direction anchor.Direction
 }
 
 // 容器布局，只用于包裹组件
@@ -111,12 +108,6 @@ func (p *ContainerLayout) Background(r, g, b, a uint8) *ContainerLayout {
 	return p
 }
 
-// 设置锚定方向
-func (p *ContainerLayout) Direction(direc anchor.Direction) *ContainerLayout {
-	p.config.direction = direc
-	return p
-}
-
 // 渲染
 func (p *ContainerLayout) Layout(gtx glayout.Context) (dimensions glayout.Dimensions) {
 	if !p.config.update || p.childWidget == nil {
@@ -130,7 +121,7 @@ func (p *ContainerLayout) Layout(gtx glayout.Context) (dimensions glayout.Dimens
 			paint.ColorOp{Color: *p.config.background}.Add(gtx.Ops)
 			paint.PaintOp{}.Add(gtx.Ops)
 		}
-		return p.config.direction.Layout(gtx, p.childWidget.Layout)
+		return p.childWidget.Layout(gtx)
 
 	})
 }
@@ -141,7 +132,7 @@ func NewContainerLayout() *ContainerLayout {
 		// 无子节点
 		childWidget: nil,
 		margin:      &glayout.Inset{},
-		config:      &containerConfig{update: true, direction: anchor.TopLeft},
+		config:      &containerConfig{update: true},
 	}
 	return widget
 }
