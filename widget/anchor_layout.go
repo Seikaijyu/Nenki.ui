@@ -3,8 +3,8 @@ package widget
 import (
 	"github.com/Seikaijyu/nenki.ui/widget/anchor"
 
-	glayout "gioui.org/layout"
-	gunit "gioui.org/unit"
+	glayout "github.com/Seikaijyu/gio/layout"
+	gunit "github.com/Seikaijyu/gio/unit"
 )
 
 // 校验接口是否实现

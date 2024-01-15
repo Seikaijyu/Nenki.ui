@@ -7,12 +7,12 @@ import (
 	"os"
 	"runtime"
 
+	"github.com/Seikaijyu/gio/op"
 	"github.com/Seikaijyu/nenki.ui/context"
 
-	gapp "gioui.org/app"
-	glayout "gioui.org/layout"
-	"gioui.org/op"
-	gunit "gioui.org/unit"
+	gapp "github.com/Seikaijyu/gio/app"
+	glayout "github.com/Seikaijyu/gio/layout"
+	gunit "github.com/Seikaijyu/gio/unit"
 )
 
 // Orientation是应用程序的方向

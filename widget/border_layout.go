@@ -3,9 +3,9 @@ package widget
 import (
 	"image/color"
 
-	glayout "gioui.org/layout"
-	gunit "gioui.org/unit"
-	gwidget "gioui.org/widget"
+	glayout "github.com/Seikaijyu/gio/layout"
+	gunit "github.com/Seikaijyu/gio/unit"
+	gwidget "github.com/Seikaijyu/gio/widget"
 )
 
 // 校验接口是否实现
