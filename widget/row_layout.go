@@ -1,7 +1,7 @@
 package widget
 
 import (
-	"nenki/widget/anchor"
+	"github.com/Seikaijyu/nenki.ui/widget/anchor"
 
 	glayout "gioui.org/layout"
 	gunit "gioui.org/unit"

@@ -7,7 +7,7 @@ import (
 	"image/color"
 	"os"
 
-	"nenki/widget"
+	"github.com/Seikaijyu/nenki.ui/widget"
 
 	gio "gioui.org/app"
 	"gioui.org/io/system"

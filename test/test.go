@@ -4,10 +4,10 @@ import (
 	_ "embed"
 	"fmt"
 
-	"nenki/app"
-	"nenki/utils"
-	"nenki/widget"
-	"nenki/widget/axis"
+	"github.com/Seikaijyu/nenki.ui/app"
+	"github.com/Seikaijyu/nenki.ui/utils"
+	"github.com/Seikaijyu/nenki.ui/widget"
+	"github.com/Seikaijyu/nenki.ui/widget/axis"
 )
 
 func main() {

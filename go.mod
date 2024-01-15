@@ -1,4 +1,4 @@
-module nenki
+module github.com/Seikaijyu/nenki.ui
 
 go 1.19
 

@@ -7,7 +7,7 @@ import (
 	"os"
 	"runtime"
 
-	"nenki/context"
+	"github.com/Seikaijyu/nenki.ui/context"
 
 	gapp "gioui.org/app"
 	glayout "gioui.org/layout"

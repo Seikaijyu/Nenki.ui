@@ -3,7 +3,7 @@ package widget
 import (
 	"image/color"
 
-	"nenki/widget/axis"
+	"github.com/Seikaijyu/nenki.ui/widget/axis"
 
 	glayout "gioui.org/layout"
 	gunit "gioui.org/unit"
