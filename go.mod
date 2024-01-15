@@ -4,7 +4,6 @@ go 1.19
 
 replace gioui.org => ./gioui
 
-require gioui.org v0.0.0-00010101000000-000000000000
 
 require (
 	gioui.org/cpu v0.0.0-20220412190645-f1e9e8c3b1f7 // indirect
