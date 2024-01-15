@@ -229,7 +229,13 @@ func (p *ListLayout) Layout(gtx glayout.Context) glayout.Dimensions {
 	})
 }
 
-// 创建一个垂直布局
+// 设置方向
+func (p *ListLayout) Axis(axis axis.Axis) *ListLayout {
+	p.listWidget.Axis = axis
+	return p
+}
+
+// 创建一个指定方向的列表布局
 func NewListLayout(axis axis.Axis) *ListLayout {
 	listWidget := gwidget.List{}
 	listMaterial := gmaterial.List(&gmaterial.Theme{}, &listWidget)

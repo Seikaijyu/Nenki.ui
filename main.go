@@ -13,21 +13,33 @@ import (
 	"gioui.org/text"
 	gwidget "gioui.org/widget"
 	"gioui.org/widget/material"
+	"nenki.ui/app"
+	"nenki.ui/widget"
+	"nenki.ui/widget/axis"
 )
 
 func main() {
-	Test()
-	// app.NewApp("测试").Size(1024, 1024).Title("你好").DragFiles(true).
-	// 	Then(func(self *app.App, root *widget.ContainerLayout) {
-	// 		h := widget.NewColumnLayout()
-	// 		root.AppendChild(h)
-	// 		h.AppendRigidChild(widget.NewCheckBox("确实是这样的"))
-	// 		h.AppendRigidChild(widget.NewCheckBox("并不是这样的"))
+	//Test()
+	app.NewApp("测试").Size(1024, 1024).Title("你好").DragFiles(true).
+		Then(func(self *app.App, root *widget.ContainerLayout) {
+			h := widget.NewColumnLayout()
+			root.AppendChild(h)
+			a := widget.NewRadioButtons(axis.Horizontal)
+			h.AppendRigidChild(a)
+			a.Size(10)
+			a.AppendRadioButton("1", "测试1")
+			a.AppendRadioButton("2", "测试2")
 
-	// 	})
+			b := widget.NewRadioButtons(axis.Horizontal)
+			h.AppendRigidChild(b)
+			b.Size(50)
+			b.AppendRadioButton("1", "试试")
+			b.AppendRadioButton("2", "试试s")
 
-	// // 阻塞
-	// app.Run()
+		})
+
+	// 阻塞
+	app.Run()
 }
 
 func Test() {
