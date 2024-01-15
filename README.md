@@ -1,9 +1,23 @@
 ## Nenki.UI
 基于gio 0.4.0（固定版本）实现的更好的golang gui框架
 
-暂无文档，可以根据此代码自行摸索，文档敬请期待
+请使用`go get github.com/Seikaijyu/nenki.ui@latest`以获取包
+
+以下是一个简单的例子
 ```go
-app.NewApp("测试").Title("Layout").
+package main
+
+import (
+	"fmt"
+
+	"github.com/Seikaijyu/nenki.ui/app"
+	"github.com/Seikaijyu/nenki.ui/utils"
+	"github.com/Seikaijyu/nenki.ui/widget"
+	"github.com/Seikaijyu/nenki.ui/widget/axis"
+)
+
+func main() {
+	app.NewApp("测试").Title("Layout").
 		Then(func(self *app.App, root *widget.ContainerLayout) {
 			self.Background(utils.HexToRGBA("#00ffac0a"))
 			root.AppendChild(widget.NewRowLayout().
@@ -13,7 +27,7 @@ app.NewApp("测试").Title("Layout").
 						cloumn2 := widget.NewColumnLayout()
 						row.AppendFlexChild(2.5, widget.NewBorder(list))
 						row.AppendFlexChild(6, widget.NewBorder(cloumn2))
-						for i := 0; i < 1000000; i++ {
+						for i := 0; i < 10000; i++ {
 							list.AppendChild(widget.NewBorder(widget.NewButton(fmt.Sprintf("Item %d", i)).
 								CornerRadius(0).Background(utils.HexToRGBA("#00fff00f")).FontColor(utils.HexToRGBA("#000000"))))
 						}
@@ -26,4 +40,6 @@ app.NewApp("测试").Title("Layout").
 
 	// 阻塞
 	app.Run()
+}
+
 ```
