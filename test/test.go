@@ -13,7 +13,7 @@ func main() {
 	app.NewApp("测试").Title("Layout").
 		Then(func(self *app.App, root *widget.ContainerLayout) {
 			self.Background(utils.HexToRGBA("#00ffac0a"))
-			root.AppendChild(widget.NewSwitch("测试").OnChange(func(p *widget.Switch, value bool) {
+			root.AppendChild(widget.NewSwitch().OnChange(func(p *widget.Switch, value bool) {
 				fmt.Println(value)
 			}))
 		})

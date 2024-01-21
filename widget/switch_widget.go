@@ -110,14 +110,8 @@ func (p *Switch) Layout(gtx glayout.Context) glayout.Dimensions {
 	})
 }
 
-// 设置说明文本
-func (p *Switch) Description(description string) *Switch {
-	p.switchWidget.Description = description
-	return p
-}
-
-func NewSwitch(description string) *Switch {
-	switchWidget := gmaterial.Switch(theme.NewTheme(), &gwidget.Bool{}, description)
+func NewSwitch() *Switch {
+	switchWidget := gmaterial.Switch(theme.NewTheme(), &gwidget.Bool{}, "")
 	return &Switch{
 		switchWidget: &switchWidget,
 		margin:       &glayout.Inset{},
