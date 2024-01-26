@@ -18,15 +18,19 @@ type checkBoxConfig struct {
 	// 记录选择的bool
 	checkedBool bool
 	// 焦点事件
-	_focused func(*CheckBox, bool)
+	_focused func(*CheckBox, bool, bool)
 	// 是否更新组件
 	update bool
 	// 删除事件
 	_destroy func()
 	// 鼠标悬浮事件
-	_hovered func(*CheckBox, bool)
+	_hovered func(*CheckBox, bool, bool)
 	// 选择事件
 	_checked func(*CheckBox, bool)
+	// 焦点值
+	_focusValue bool
+	// 悬浮值
+	_hoverValue bool
 }
 
 // 复选框
@@ -79,12 +83,14 @@ func (p *CheckBox) Layout(gtx glayout.Context) glayout.Dimensions {
 	if !p.config.update {
 		p.config.update = false
 	}
-	if p.config._hovered != nil && p.checkBoxWidget.CheckBox.Hovered() {
-		p.config._hovered(p, p.checkBool.Value)
+	if p.config._hovered != nil && p.config._hoverValue != p.checkBoxWidget.CheckBox.Hovered() {
+		p.config._hovered(p, p.checkBoxWidget.CheckBox.Hovered(), p.checkBool.Value)
+		p.config._hoverValue = p.checkBoxWidget.CheckBox.Hovered()
 	}
 
-	if p.config._focused != nil && p.checkBoxWidget.CheckBox.Focused() {
-		p.config._focused(p, p.checkBool.Value)
+	if p.config._focused != nil && p.config._focusValue != p.checkBoxWidget.CheckBox.Focused() {
+		p.config._focused(p, p.checkBoxWidget.CheckBox.Focused(), p.checkBool.Value)
+		p.config._focusValue = p.checkBoxWidget.CheckBox.Focused()
 	}
 
 	p.config.checkedBool = p.checkBool.Value
@@ -106,7 +112,7 @@ func (p *CheckBox) Size(size float32) *CheckBox {
 }
 
 // 鼠标悬浮事件
-func (p *CheckBox) OnHovered(fn func(p *CheckBox, check bool)) *CheckBox {
+func (p *CheckBox) OnHovered(fn func(p *CheckBox, hover bool, check bool)) *CheckBox {
 	p.config._hovered = fn
 	return p
 }
@@ -153,7 +159,7 @@ func (p *CheckBox) GetChecked() bool {
 }
 
 // 焦点事件
-func (p *CheckBox) OnFocused(fn func(*CheckBox, bool)) *CheckBox {
+func (p *CheckBox) OnFocused(fn func(p *CheckBox, focus bool, value bool)) *CheckBox {
 	p.config._focused = fn
 	return p
 }

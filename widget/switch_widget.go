@@ -19,7 +19,8 @@ type switchConfig struct {
 	update bool
 	// 删除事件
 	_destroy func()
-	_change  func(*Switch, bool)
+	// 选择事件
+	_change func(*Switch, bool)
 }
 
 type Switch struct {

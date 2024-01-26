@@ -22,13 +22,15 @@ type editorConfig struct {
 	// 删除事件
 	_destroy func()
 	// 鼠焦点事件
-	_focused func(*Editor, string)
+	_focused func(*Editor, bool, string)
 	// 回车事件，仅在单行编辑时有效
 	_submit func(*Editor, string)
 	// 选择事件
 	_select func(*Editor, string)
 	// 文本改变事件
 	_change func(*Editor, string)
+	// 焦点值
+	_focusValue bool
 }
 
 // 编辑框
@@ -96,10 +98,9 @@ func (p *Editor) Layout(gtx glayout.Context) glayout.Dimensions {
 			}
 		}
 	}
-	if p.config._focused != nil {
-		if p.editorMaterial.Editor.Focused() {
-			p.config._focused(p, p.GetText())
-		}
+	if p.config._focused != nil && p.config._focusValue != p.editorMaterial.Editor.Focused() {
+		p.config._focused(p, p.editorMaterial.Editor.Focused(), p.GetText())
+		p.config._focusValue = p.editorMaterial.Editor.Focused()
 	}
 
 	return p.margin.Layout(gtx, func(gtx glayout.Context) glayout.Dimensions {
@@ -237,7 +238,7 @@ func (p *Editor) Focus() *Editor {
 }
 
 // 方法返回编辑器是否处于焦点状态。
-func (p *Editor) OnFocused(fn func(p *Editor, text string)) *Editor {
+func (p *Editor) OnFocused(fn func(p *Editor, focus bool, text string)) *Editor {
 	p.config._focused = fn
 	return p
 }

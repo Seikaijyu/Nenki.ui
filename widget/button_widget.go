@@ -23,13 +23,17 @@ type buttonConfig struct {
 	// 模拟点击
 	_click func()
 	// 鼠标悬浮事件
-	_hovered func(*Button)
+	_hovered func(*Button, bool)
 	// 鼠标按下事件
 	_pressed func(*Button)
 	// 长点击
 	_longClicked func(*Button)
 	// 焦点事件
-	_focused func(*Button)
+	_focused func(*Button, bool)
+	// 焦点值
+	_focusValue bool
+	// 悬浮值
+	_hoverValue bool
 }
 type Button struct {
 	margin *glayout.Inset
@@ -130,7 +134,7 @@ func (p *Button) Text(text string) *Button {
 }
 
 // 获取焦点状态
-func (p *Button) OnFocused(fn func(*Button)) *Button {
+func (p *Button) OnFocused(fn func(p *Button, focus bool)) *Button {
 	p.config._focused = fn
 	return p
 }
@@ -145,25 +149,25 @@ func (p *Button) Click() *Button {
 }
 
 // 点击事件
-func (p *Button) OnClicked(fn func(*Button)) *Button {
+func (p *Button) OnClicked(fn func(p *Button)) *Button {
 	p.config._clicked = fn
 	return p
 }
 
 // 鼠标悬浮事件
-func (p *Button) OnHovered(fn func(*Button)) *Button {
+func (p *Button) OnHovered(fn func(p *Button, hover bool)) *Button {
 	p.config._hovered = fn
 	return p
 }
 
 // 鼠标按下事件
-func (p *Button) OnPressed(fn func(*Button)) *Button {
+func (p *Button) OnPressed(fn func(p *Button)) *Button {
 	p.config._pressed = fn
 	return p
 }
 
 // 多次点击事件
-func (p *Button) OnLongClicked(fn func(*Button)) *Button {
+func (p *Button) OnLongClicked(fn func(p *Button)) *Button {
 	p.config._longClicked = fn
 	return p
 }
@@ -174,16 +178,18 @@ func (p *Button) Layout(gtx glayout.Context) glayout.Dimensions {
 		return glayout.Dimensions{}
 	}
 	// 悬浮事件
-	if p.config._hovered != nil && p.button.Button.Hovered() {
-		p.config._hovered(p)
+	if p.config._hovered != nil && p.config._hoverValue != p.button.Button.Hovered() {
+		p.config._hovered(p, p.button.Button.Hovered())
+		p.config._hoverValue = p.button.Button.Hovered()
 	}
 	// 按下事件
 	if p.config._pressed != nil && p.button.Button.Pressed() {
 		p.config._pressed(p)
 	}
 	// 焦点事件
-	if p.config._focused != nil && p.button.Button.Focused() {
-		p.config._focused(p)
+	if p.config._focused != nil && p.config._focusValue != p.button.Button.Focused() {
+		p.config._focused(p, p.button.Button.Focused())
+		p.config._focusValue = p.button.Button.Focused()
 	}
 	// 双击事件，其中实现了点击事件
 	if p.config._longClicked != nil {
