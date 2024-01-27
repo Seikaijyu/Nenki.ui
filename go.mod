@@ -3,9 +3,8 @@ module github.com/Seikaijyu/nenki.ui
 go 1.19
 
 require (
-	gioui.org v0.4.2
-	gioui.org/x v0.4.0
 	github.com/Seikaijyu/gio v0.0.1
+	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 )
 
 require (

@@ -4,6 +4,7 @@ import (
 	"image/color"
 	"time"
 
+	"github.com/Seikaijyu/nenki.ui/widget/edge"
 	"github.com/Seikaijyu/nenki.ui/widget/theme"
 
 	glayout "github.com/Seikaijyu/gio/layout"
@@ -257,5 +258,6 @@ func NewButton(text string) *Button {
 		config:        &buttonConfig{update: true},
 		button:        gmaterial.Button(theme.NewTheme(), &gwidget.Clickable{}, text),
 	}
+	widget.Padding(edge.All(0))
 	return widget
 }
