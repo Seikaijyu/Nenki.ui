@@ -52,7 +52,6 @@ func (p *AppUI) loop() error {
 			case system.DestroyEvent:
 				return e.Err
 			case system.FrameEvent:
-
 				p.graphContext = glayout.NewContext(&ops, e)
 				var stack = clip.Rect{Max: e.Size}.Push(p.graphContext.Ops)
 				// 设置背景颜色
